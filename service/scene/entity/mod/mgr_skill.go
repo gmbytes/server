@@ -5,23 +5,23 @@ import (
 	"server/data/conf"
 	"server/lib/matrix"
 	"server/lib/uid"
-	skill2 "server/service/scene/entity/mod/skill"
-	score2 "server/service/scene/score"
+	"server/service/scene/entity/mod/skill"
+	"server/service/scene/score"
 )
 
-var _ score2.IModule = (*SkillManager)(nil)
+var _ score.IModule = (*SkillManager)(nil)
 
 type SkillManager struct {
-	owner score2.IEntity
+	owner score.IEntity
 
-	skills map[int64]*skill2.Skill
+	skills map[int64]*skill.Skill
 
 	NowMs int64
 }
 
-func (m *SkillManager) Init(owner score2.IEntity, initData data.EntityInitData) {
+func (m *SkillManager) Init(owner score.IEntity, initData data.EntityInitData) {
 	m.owner = owner
-	m.skills = make(map[int64]*skill2.Skill)
+	m.skills = make(map[int64]*skill.Skill)
 }
 
 func (m *SkillManager) Update() {
@@ -29,7 +29,7 @@ func (m *SkillManager) Update() {
 
 	for _, s := range m.skills {
 		skillInst := s
-		s.Update(m.NowMs, func(stage skill2.Stage, eff conf.EffectCfg, ctx skill2.CastContext) {
+		s.Update(m.NowMs, func(stage skill.Stage, eff conf.EffectCfg, ctx skill.CastContext) {
 			m.execEffect(skillInst, stage, eff, ctx)
 		})
 	}
@@ -40,12 +40,12 @@ func (m *SkillManager) AddSkill(cfg *conf.CSkill) {
 		return
 	}
 	if m.skills == nil {
-		m.skills = make(map[int64]*skill2.Skill)
+		m.skills = make(map[int64]*skill.Skill)
 	}
-	m.skills[cfg.Cid] = skill2.NewSkill(cfg)
+	m.skills[cfg.Cid] = skill.NewSkill(cfg)
 }
 
-func (m *SkillManager) Cast(skillId int64, ctx skill2.CastContext) bool {
+func (m *SkillManager) Cast(skillId int64, ctx skill.CastContext) bool {
 	rt := m.skills[skillId]
 	if rt == nil {
 		return false
@@ -61,7 +61,7 @@ func (m *SkillManager) Cancel(skillId int64) {
 	rt.Cancel(m.NowMs)
 }
 
-func (m *SkillManager) execEffect(s *skill2.Skill, stage skill2.Stage, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) execEffect(s *skill.Skill, stage skill.Stage, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m.owner
 
 	selector := m.selectTargetCfg(s, stage)
@@ -93,30 +93,30 @@ func (m *SkillManager) execEffect(s *skill2.Skill, stage skill2.Stage, eff conf.
 	}
 }
 
-func (m *SkillManager) selectTargetCfg(s *skill2.Skill, stage skill2.Stage) *conf.TargetCfg {
+func (m *SkillManager) selectTargetCfg(s *skill.Skill, stage skill.Stage) *conf.TargetCfg {
 	if s == nil || s.Cfg == nil {
 		return nil
 	}
 
 	selectors := s.Cfg.Selectors
 	switch stage {
-	case skill2.Stage_CastStart:
+	case skill.Stage_CastStart:
 		if selectors.OnCastStart != nil {
 			return selectors.OnCastStart
 		}
-	case skill2.Stage_CastFinish:
+	case skill.Stage_CastFinish:
 		if selectors.OnCastFinish != nil {
 			return selectors.OnCastFinish
 		}
-	case skill2.Stage_Channel:
+	case skill.Stage_Channel:
 		if selectors.OnChannelTick != nil {
 			return selectors.OnChannelTick
 		}
-	case skill2.Stage_Hit:
+	case skill.Stage_Hit:
 		if selectors.OnHit != nil {
 			return selectors.OnHit
 		}
-	case skill2.Stage_Cancel:
+	case skill.Stage_Cancel:
 		if selectors.OnCancel != nil {
 			return selectors.OnCancel
 		}
@@ -125,7 +125,7 @@ func (m *SkillManager) selectTargetCfg(s *skill2.Skill, stage skill2.Stage) *con
 	return &s.Cfg.Target
 }
 
-func (m *SkillManager) resolveTargets(cfg *conf.TargetCfg, ctx skill2.CastContext) []uid.Uid {
+func (m *SkillManager) resolveTargets(cfg *conf.TargetCfg, ctx skill.CastContext) []uid.Uid {
 	if cfg == nil {
 		return nil
 	}
@@ -186,7 +186,7 @@ func (m *SkillManager) resolveTargets(cfg *conf.TargetCfg, ctx skill2.CastContex
 		center := matrix.Vector3D{X: float64(ctx.X), Y: float64(ctx.Y), Z: 0}
 		r2 := r * r
 		res := make([]uid.Uid, 0)
-		sc.ForEachEntity(func(id uid.Uid, e score2.IEntity) {
+		sc.ForEachEntity(func(id uid.Uid, e score.IEntity) {
 			if e == nil {
 				return
 			}
@@ -207,70 +207,70 @@ func (m *SkillManager) resolveTargets(cfg *conf.TargetCfg, ctx skill2.CastContex
 	return nil
 }
 
-func (m *SkillManager) applyDamage(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyDamage(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyHeal(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyHeal(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyAura(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyAura(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyDispel(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyDispel(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applySteal(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applySteal(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyMove(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyMove(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyInterrupt(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyInterrupt(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applySummon(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applySummon(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applyThreat(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applyThreat(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff
 	_ = ctx
 }
 
-func (m *SkillManager) applySpawnArea(targets []uid.Uid, eff conf.EffectCfg, ctx skill2.CastContext) {
+func (m *SkillManager) applySpawnArea(targets []uid.Uid, eff conf.EffectCfg, ctx skill.CastContext) {
 	_ = m
 	_ = targets
 	_ = eff

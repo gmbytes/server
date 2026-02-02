@@ -5,11 +5,11 @@ import (
 	"server/data/enum"
 	"server/lib/matrix"
 	"server/lib/uid"
-	mod2 "server/service/scene/entity/mod"
-	score2 "server/service/scene/score"
+	"server/service/scene/entity/mod"
+	"server/service/scene/score"
 )
 
-var _ score2.IEntity = (*EntityBase)(nil)
+var _ score.IEntity = (*EntityBase)(nil)
 
 type ManagerType = int
 
@@ -21,23 +21,23 @@ const (
 
 type EntityBase struct {
 	id    uid.Uid
-	scene score2.IScene
+	scene score.IScene
 	ety   enum.EntityType
 	pos   *matrix.Vector3D
 	dir   int32
 
-	managers [Max]score2.IModule
+	managers [Max]score.IModule
 }
 
-func (e *EntityBase) Init(scene score2.IScene, initData data.EntityInitData) {
+func (e *EntityBase) Init(scene score.IScene, initData data.EntityInitData) {
 	e.scene = scene
 	e.id = uid.Gen()
 	if e.scene != nil {
 		e.scene.AddEntity(e)
 	}
 	if e.ety == enum.EntityType_Role || e.ety == enum.EntityType_Npc {
-		e.managers[BattleManager] = &mod2.BattleManager{}
-		e.managers[SkillManager] = &mod2.SkillManager{}
+		e.managers[BattleManager] = &mod.BattleManager{}
+		e.managers[SkillManager] = &mod.SkillManager{}
 	}
 
 	for _, m := range e.managers {
@@ -61,7 +61,7 @@ func (e *EntityBase) GetId() uid.Uid {
 	return e.id
 }
 
-func (e *EntityBase) GetScene() score2.IScene {
+func (e *EntityBase) GetScene() score.IScene {
 	return e.scene
 }
 

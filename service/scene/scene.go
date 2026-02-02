@@ -1,50 +1,41 @@
 package scene
 
 import (
+	"server/lib/container"
 	"server/lib/uid"
-	score2 "server/service/scene/score"
+	"server/service/scene/score"
 )
 
-var _ score2.IScene = (*Scene)(nil)
+var _ score.IScene = (*Scene)(nil)
 
 type Scene struct {
-	entities map[uid.Uid]score2.IEntity
+	entities *container.LMap[uid.Uid, score.IEntity]
 }
 
 func (ss *Scene) Init() {
-	ss.entities = make(map[uid.Uid]score2.IEntity)
+	ss.entities = container.NewLMap[uid.Uid, score.IEntity]()
 }
 
-func (ss *Scene) AddEntity(e score2.IEntity) {
-	if ss.entities == nil {
-		ss.entities = make(map[uid.Uid]score2.IEntity)
-	}
+func (ss *Scene) AddEntity(e score.IEntity) {
 	if e == nil {
 		return
 	}
-	ss.entities[e.GetId()] = e
+	ss.entities.Set(e.GetId(), e)
 }
 
 func (ss *Scene) RemoveEntity(id uid.Uid) {
-	if ss.entities == nil {
-		return
-	}
-	delete(ss.entities, id)
+	ss.entities.Delete(id)
 }
 
-func (ss *Scene) GetEntity(id uid.Uid) (score2.IEntity, bool) {
-	if ss.entities == nil {
-		return nil, false
-	}
-	e, ok := ss.entities[id]
-	return e, ok
+func (ss *Scene) GetEntity(id uid.Uid) (score.IEntity, bool) {
+	return ss.entities.Get(id)
 }
 
-func (ss *Scene) ForEachEntity(fn func(id uid.Uid, e score2.IEntity)) {
-	if ss.entities == nil || fn == nil {
+func (ss *Scene) ForEachEntity(fn func(id uid.Uid, e score.IEntity)) {
+	if fn == nil {
 		return
 	}
-	for id, e := range ss.entities {
-		fn(id, e)
+	for _, entry := range ss.entities.Entries() {
+		fn(entry.Key, entry.Value)
 	}
 }

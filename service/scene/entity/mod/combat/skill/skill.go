@@ -3,8 +3,6 @@ package skill
 import (
 	"server/data/conf"
 	"sort"
-
-	"server/lib/uid"
 )
 
 // Stage 表示技能运行时的阶段（Effect 执行时机）。
@@ -25,14 +23,6 @@ const (
 	// Stage_Cancel 取消/被打断。
 	Stage_Cancel Stage = 5
 )
-
-// CastContext 为一次施法的上下文（目标与位置）。
-// 这里仅保留最小字段；后续可扩展为：朝向、施法快照属性、是否锁定目标等。
-type CastContext struct {
-	TargetId uid.Uid
-	X        float32
-	Y        float32
-}
 
 // ScheduledEffect 为延迟执行的 Effect。
 // 用于支持多段结算（Times/IntervalMs）、以及未来的弹道/延迟命中等。
@@ -70,7 +60,7 @@ type Skill struct {
 	ChannelEndAt int64
 
 	// Ctx 为当前技能上下文；Pending 为待执行的 Effect 队列。
-	Ctx     CastContext
+	Ctx     *SkillContext
 	Pending []ScheduledEffect
 }
 
@@ -98,7 +88,7 @@ func (s *Skill) CanCast(now int64) bool {
 
 // StartCast 尝试开始施法。
 // 成功后会触发 OnCastStart，并进入 Casting（若有吟唱）或直接 finishCast（瞬发）。
-func (s *Skill) StartCast(now int64, ctx CastContext) bool {
+func (s *Skill) StartCast(now int64, ctx *SkillContext) bool {
 	if !s.CanCast(now) {
 		return false
 	}
@@ -151,7 +141,7 @@ func (s *Skill) Cancel(now int64) {
 }
 
 // TriggerHit 外部命中事件入口（例如弹道系统回调）。
-func (s *Skill) TriggerHit(now int64, ctx CastContext) {
+func (s *Skill) TriggerHit(now int64, ctx *SkillContext) {
 	if s == nil || s.Cfg == nil {
 		return
 	}
@@ -160,8 +150,8 @@ func (s *Skill) TriggerHit(now int64, ctx CastContext) {
 }
 
 // Update 推进技能运行时，并在时间到达时执行 Pending 队列。
-// exec 回调由上层实现，用来处理“实际结算”（伤害/治疗/施加 Buff 等）。
-func (s *Skill) Update(now int64, exec func(Stage, conf.EffectCfg, CastContext)) {
+// exec 回调由上层实现，用来处理"实际结算"（伤害/治疗/施加 Buff 等）。
+func (s *Skill) Update(now int64, exec func(Stage, conf.EffectCfg, *SkillContext)) {
 	if s == nil || s.Cfg == nil {
 		return
 	}

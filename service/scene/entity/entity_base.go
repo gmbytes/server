@@ -48,12 +48,12 @@ func (e *EntityBase) Init(scene score.IScene, initData data.EntityInitData) {
 	}
 }
 
-func (e *EntityBase) Update() {
+func (e *EntityBase) Update(duration int64) {
 	for _, m := range e.managers {
 		if m == nil {
 			continue
 		}
-		m.Update()
+		m.Update(duration)
 	}
 }
 

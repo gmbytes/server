@@ -5,7 +5,7 @@ import (
 	"server/data/enum"
 	"server/lib/matrix"
 	"server/lib/uid"
-	"server/service/scene/entity/mod"
+	"server/service/scene/entity/mod/combat"
 	"server/service/scene/score"
 )
 
@@ -14,8 +14,7 @@ var _ score.IEntity = (*EntityBase)(nil)
 type ManagerType = int
 
 const (
-	BattleManager ManagerType = iota
-	SkillManager
+	CombatManager ManagerType = iota
 	Max
 )
 
@@ -36,8 +35,8 @@ func (e *EntityBase) Init(scene score.IScene, initData data.EntityInitData) {
 		e.scene.AddEntity(e)
 	}
 	if e.ety == enum.EntityType_Role || e.ety == enum.EntityType_Npc {
-		e.managers[BattleManager] = &mod.BattleManager{}
-		e.managers[SkillManager] = &mod.SkillManager{}
+		e.managers[CombatManager] = &combat.CombatManager{}
+
 	}
 
 	for _, m := range e.managers {

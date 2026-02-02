@@ -31,11 +31,9 @@ func (ss *Scene) GetEntity(id uid.Uid) (score.IEntity, bool) {
 	return ss.entities.Get(id)
 }
 
-func (ss *Scene) ForEachEntity(fn func(id uid.Uid, e score.IEntity)) {
+func (ss *Scene) ForEach(fn func(e score.IEntity)) {
 	if fn == nil {
 		return
 	}
-	for _, entry := range ss.entities.Entries() {
-		fn(entry.Key, entry.Value)
-	}
+	ss.entities.ForEach(fn)
 }

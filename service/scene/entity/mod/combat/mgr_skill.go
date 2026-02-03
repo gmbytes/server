@@ -205,7 +205,7 @@ func (m *SkillManager) selectPoint(sc score.IScene, ctx *skill.SkillContext, cfg
 	r2 := r * r
 	result := make([]score.IEntity, 0)
 
-	sc.ForEachEntity(func(id uid.Uid, e score.IEntity) {
+	sc.ForEach(func(e score.IEntity) {
 		if e == nil {
 			return
 		}

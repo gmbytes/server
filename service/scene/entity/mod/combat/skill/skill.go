@@ -30,6 +30,8 @@ type ScheduledEffect struct {
 	At     int64
 	Stage  Stage
 	Effect conf.EffectCfg
+	Index  int32 // 执行索引（同一 EffectCfg 配置的第几次执行，从 0 开始）
+	Seq    int32 // 全局序列号（整个技能所有 Effect 的执行顺序，从 0 开始递增）
 }
 
 // RuntimeState 为技能运行时状态（是否正在吟唱/引导）。
@@ -179,6 +181,10 @@ func (s *Skill) Update(now int64, exec func(Stage, conf.EffectCfg, *SkillContext
 	for idx < len(s.Pending) && s.Pending[idx].At <= now {
 		se := s.Pending[idx]
 		if exec != nil {
+			// 设置当前 Effect 的全局序列号
+			if s.Ctx != nil {
+				s.Ctx.CurrentEffectSeq = se.Seq
+			}
 			exec(se.Stage, se.Effect, s.Ctx)
 		}
 		idx++
@@ -266,6 +272,13 @@ func (s *Skill) scheduleEffect(stage Stage, startAt int64, endAt int64, eff conf
 		if endAt > 0 && at > endAt {
 			break
 		}
-		s.Pending = append(s.Pending, ScheduledEffect{At: at, Stage: stage, Effect: eff})
+		seq := int32(len(s.Pending)) // 全局序列号
+		s.Pending = append(s.Pending, ScheduledEffect{
+			At:     at,
+			Stage:  stage,
+			Effect: eff,
+			Index:  i,   // 当前配置的第几次执行
+			Seq:    seq, // 全局执行顺序
+		})
 	}
 }

@@ -126,7 +126,7 @@ func (e *AuraEffect) Update(ctx *SkillContext, delta time.Duration) {
     
     // 这里可以访问 EffectRuntime 中的 Targets
     // 对每个目标造成 DoT 伤害
-    for _, target := range ctx.Owner.GetScene().GetEntities() {
+    for _, target := range ctx.Owner.GetZone().GetEntities() {
         // 检查目标是否有此 Buff
         if hasBuff(target, e.cfg.RefId) {
             applyDotDamage(target, tickDamage)
@@ -167,14 +167,14 @@ func (e *SpawnAreaEffect) Begin(ctx *SkillContext, causer score.IEntity, targets
     radius := float32(e.cfg.P1)
     
     // 在场景中创建区域实体
-    createAreaEntity(ctx.Scene, ctx.Req.Pos, radius, areaId)
+    createAreaEntity(ctx.Zone, ctx.Req.Pos, radius, areaId)
 }
 
 func (e *SpawnAreaEffect) Update(ctx *SkillContext, delta time.Duration) {
     // 每个 Tick 检测区域内的单位
     // 对区域内的单位施加效果
     
-    entitiesInArea := findEntitiesInArea(ctx.Scene, ctx.Req.Pos, e.cfg.P1)
+    entitiesInArea := findEntitiesInArea(ctx.Zone, ctx.Req.Pos, e.cfg.P1)
     
     for _, entity := range entitiesInArea {
         // 施加区域效果（例如每秒造成伤害）
@@ -184,7 +184,7 @@ func (e *SpawnAreaEffect) Update(ctx *SkillContext, delta time.Duration) {
 
 func (e *SpawnAreaEffect) End(ctx *SkillContext) {
     // 移除区域实体
-    removeAreaEntity(ctx.Scene, e.cfg.RefId)
+    removeAreaEntity(ctx.Zone, e.cfg.RefId)
 }
 
 func (e *SpawnAreaEffect) Revert(ctx *SkillContext) {

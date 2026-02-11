@@ -4,14 +4,14 @@ import (
 	"server/data"
 	"server/data/conf"
 	"server/data/enum"
-	"server/service/scene/entity/mod/combat/skill"
-	"server/service/scene/score"
+	"server/service/world/zone/entity/mod/combat/skill"
+	"server/service/world/zone/izone"
 )
 
-var _ score.IModule = (*CombatManager)(nil)
+var _ izone.IModule = (*CombatManager)(nil)
 
 type CombatManager struct {
-	owner score.IEntity
+	owner izone.IEntity
 	attrs *data.Attrs
 
 	skillMgr  *SkillManager
@@ -21,7 +21,7 @@ type CombatManager struct {
 	maxHp int64
 }
 
-func (m *CombatManager) Init(owner score.IEntity, initData data.EntityInitData) {
+func (m *CombatManager) Init(owner izone.IEntity, initData data.EntityInitData) {
 	m.owner = owner
 	m.attrs = initData.Attrs
 	m.skillMgr = newSkillManager(m)
@@ -38,7 +38,7 @@ func (m *CombatManager) Update(duration int64) {
 	m.effectMgr.Update(duration)
 }
 
-func (m *CombatManager) ExecuteEffect(eff conf.EffectCfg, ctx *skill.SkillContext, caster score.IEntity, targets []score.IEntity) {
+func (m *CombatManager) ExecuteEffect(eff conf.EffectCfg, ctx *skill.SkillContext, caster izone.IEntity, targets []izone.IEntity) {
 	if len(targets) == 0 {
 		return
 	}
@@ -103,7 +103,7 @@ func (m *CombatManager) isInstantEffect(effectType conf.EffectType) bool {
 	}
 }
 
-func (m *CombatManager) CalculateDamage(attacker score.IEntity, target score.IEntity, baseDamage int64) int64 {
+func (m *CombatManager) CalculateDamage(attacker izone.IEntity, target izone.IEntity, baseDamage int64) int64 {
 	if attacker == nil || target == nil {
 		return 0
 	}
@@ -113,7 +113,7 @@ func (m *CombatManager) CalculateDamage(attacker score.IEntity, target score.IEn
 	return damage
 }
 
-func (m *CombatManager) CalculateHeal(healer score.IEntity, target score.IEntity, baseHeal int64) int64 {
+func (m *CombatManager) CalculateHeal(healer izone.IEntity, target izone.IEntity, baseHeal int64) int64 {
 	if healer == nil || target == nil {
 		return 0
 	}
@@ -123,7 +123,7 @@ func (m *CombatManager) CalculateHeal(healer score.IEntity, target score.IEntity
 	return heal
 }
 
-func (m *CombatManager) ApplyDamage(target score.IEntity, damage int64) {
+func (m *CombatManager) ApplyDamage(target izone.IEntity, damage int64) {
 	if target == nil || damage <= 0 {
 		return
 	}
@@ -136,7 +136,7 @@ func (m *CombatManager) ApplyDamage(target score.IEntity, damage int64) {
 	}
 }
 
-func (m *CombatManager) ApplyHeal(target score.IEntity, heal int64) {
+func (m *CombatManager) ApplyHeal(target izone.IEntity, heal int64) {
 	if target == nil || heal <= 0 {
 		return
 	}

@@ -2,7 +2,7 @@ package skill
 
 import (
 	"server/data/conf"
-	"server/service/scene/score"
+	"server/service/world/zone/izone"
 	"time"
 )
 
@@ -14,7 +14,7 @@ func NewDamageEffect(cfg conf.EffectCfg) *DamageEffect {
 	return &DamageEffect{cfg: cfg}
 }
 
-func (e *DamageEffect) Begin(ctx *SkillContext, causer score.IEntity, targets []score.IEntity) {
+func (e *DamageEffect) Begin(ctx *SkillContext, causer izone.IEntity, targets []izone.IEntity) {
 	_ = ctx
 	_ = causer
 	_ = targets

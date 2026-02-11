@@ -3,13 +3,13 @@ package entity
 import (
 	"server/data"
 	"server/data/enum"
-	"server/lib/matrix"
 	"server/lib/uid"
-	"server/service/scene/entity/mod/combat"
-	"server/service/scene/score"
+	"server/pb"
+	"server/service/world/zone/entity/mod/combat"
+	"server/service/world/zone/izone"
 )
 
-var _ score.IEntity = (*EntityBase)(nil)
+var _ izone.IEntity = (*EntityBase)(nil)
 
 type ManagerType = int
 
@@ -19,20 +19,20 @@ const (
 )
 
 type EntityBase struct {
-	id    uid.Uid
-	scene score.IScene
-	ety   enum.EntityType
-	pos   *matrix.Vector3D
-	dir   int32
+	id   uid.Uid
+	zone izone.IZone
+	ety  enum.EntityType
+	pos  *pb.Vector
+	dir  int32
 
-	managers [Max]score.IModule
+	managers [Max]izone.IModule
 }
 
-func (e *EntityBase) Init(scene score.IScene, initData data.EntityInitData) {
-	e.scene = scene
+func (e *EntityBase) Init(zone izone.IZone, initData data.EntityInitData) {
+	e.zone = zone
 	e.id = uid.Gen()
-	if e.scene != nil {
-		e.scene.AddEntity(e)
+	if e.zone != nil {
+		e.zone.AddEntity(e)
 	}
 	if e.ety == enum.EntityType_Role || e.ety == enum.EntityType_Npc {
 		e.managers[CombatManager] = &combat.CombatManager{}
@@ -60,15 +60,15 @@ func (e *EntityBase) GetId() uid.Uid {
 	return e.id
 }
 
-func (e *EntityBase) GetScene() score.IScene {
-	return e.scene
+func (e *EntityBase) GetZone() izone.IZone {
+	return e.zone
 }
 
-func (e *EntityBase) GetPos() *matrix.Vector3D {
+func (e *EntityBase) GetPos() *pb.Vector {
 	return e.pos
 }
 
-func (e *EntityBase) SetPos(pos *matrix.Vector3D) {
+func (e *EntityBase) SetPos(pos *pb.Vector) {
 	e.pos = pos
 }
 

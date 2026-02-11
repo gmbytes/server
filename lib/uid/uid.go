@@ -13,7 +13,7 @@ type Uid int64
 
 var Zero Uid = 0
 
-var VAR_SCENE_EntityId = Uid(1)
+var VAR_ZONE_EntityId = Uid(1)
 
 func (x Uid) ToString() string {
 	return strconv.FormatInt(int64(x), 10)

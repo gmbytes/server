@@ -3,17 +3,16 @@ package combat
 import (
 	"server/data/conf"
 	"server/lib/container"
-	"server/lib/matrix"
 	"server/lib/uid"
 	"server/pb"
-	"server/service/scene/entity/mod/combat/skill"
-	"server/service/scene/score"
+	"server/service/world/zone/entity/mod/combat/skill"
+	"server/service/world/zone/izone"
 )
 
 type SkillManager struct {
 	*CombatManager
 
-	owner score.IEntity
+	owner izone.IEntity
 
 	skills *container.LMap[int64, *skill.Skill]
 
@@ -120,33 +119,33 @@ func (m *SkillManager) selectTargetCfg(s *skill.Skill, stage skill.Stage) *conf.
 	return &s.Cfg.Target
 }
 
-func (m *SkillManager) selectTargets(cfg *conf.TargetCfg, ctx *skill.SkillContext) []score.IEntity {
+func (m *SkillManager) selectTargets(cfg *conf.TargetCfg, ctx *skill.SkillContext) []izone.IEntity {
 	if cfg == nil || ctx == nil {
 		return nil
 	}
 
 	if cfg.Relation == conf.TargetRelation_Self {
-		return []score.IEntity{m.owner}
+		return []izone.IEntity{m.owner}
 	}
 
-	sc := m.owner.GetScene()
-	if sc == nil {
+	z := m.owner.GetZone()
+	if z == nil {
 		return nil
 	}
 
 	switch cfg.Mode {
 	case conf.TargetMode_Unit:
-		return m.selectUnit(sc, ctx, cfg)
+		return m.selectUnit(z, ctx, cfg)
 	case conf.TargetMode_NoTarget:
-		return m.selectNoTarget(sc, ctx, cfg)
+		return m.selectNoTarget(z, ctx, cfg)
 	case conf.TargetMode_Point:
-		return m.selectPoint(sc, ctx, cfg)
+		return m.selectPoint(z, ctx, cfg)
 	default:
 		return nil
 	}
 }
 
-func (m *SkillManager) selectUnit(sc score.IScene, ctx *skill.SkillContext, cfg *conf.TargetCfg) []score.IEntity {
+func (m *SkillManager) selectUnit(z izone.IZone, ctx *skill.SkillContext, cfg *conf.TargetCfg) []izone.IEntity {
 	if ctx.Req == nil {
 		return nil
 	}
@@ -156,17 +155,17 @@ func (m *SkillManager) selectUnit(sc score.IScene, ctx *skill.SkillContext, cfg 
 		return nil
 	}
 
-	entity, ok := sc.GetEntity(targetId)
+	entity, ok := z.GetEntity(targetId)
 	if !ok {
 		return nil
 	}
 
-	return []score.IEntity{entity}
+	return []izone.IEntity{entity}
 }
 
-func (m *SkillManager) selectNoTarget(sc score.IScene, ctx *skill.SkillContext, cfg *conf.TargetCfg) []score.IEntity {
+func (m *SkillManager) selectNoTarget(z izone.IZone, ctx *skill.SkillContext, cfg *conf.TargetCfg) []izone.IEntity {
 	if cfg.Shape == conf.ShapeType_Single {
-		return []score.IEntity{m.owner}
+		return []izone.IEntity{m.owner}
 	}
 
 	if cfg.Shape == conf.ShapeType_Circle {
@@ -179,15 +178,15 @@ func (m *SkillManager) selectNoTarget(sc score.IScene, ctx *skill.SkillContext, 
 		if newCtx.Req == nil {
 			newCtx.Req = &pb.ReqCastSkill{}
 		}
-		newCtx.Req.Pos = &matrix.Vector3D{X: pos.X, Y: pos.Y, Z: pos.Z}
+		newCtx.Req.Pos = &pb.Vector{X: pos.X, Y: pos.Y, Z: pos.Z}
 
-		return m.selectPoint(sc, &newCtx, cfg)
+		return m.selectPoint(z, &newCtx, cfg)
 	}
 
 	return nil
 }
 
-func (m *SkillManager) selectPoint(sc score.IScene, ctx *skill.SkillContext, cfg *conf.TargetCfg) []score.IEntity {
+func (m *SkillManager) selectPoint(z izone.IZone, ctx *skill.SkillContext, cfg *conf.TargetCfg) []izone.IEntity {
 	if cfg.Shape != conf.ShapeType_Circle {
 		return nil
 	}
@@ -203,9 +202,9 @@ func (m *SkillManager) selectPoint(sc score.IScene, ctx *skill.SkillContext, cfg
 
 	center := *ctx.Req.Pos
 	r2 := r * r
-	result := make([]score.IEntity, 0)
+	result := make([]izone.IEntity, 0)
 
-	sc.ForEach(func(e score.IEntity) {
+	z.ForEach(func(e izone.IEntity) {
 		if e == nil {
 			return
 		}

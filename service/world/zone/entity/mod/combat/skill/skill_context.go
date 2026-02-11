@@ -3,7 +3,7 @@ package skill
 import (
 	"server/lib/uid"
 	"server/pb"
-	"server/service/scene/score"
+	izone2 "server/service/world/zone/izone"
 	"time"
 )
 
@@ -40,17 +40,17 @@ type EffectResult struct {
 	Seq int32 // Effect 全局序列号
 
 	// 常用数据字段（覆盖大部分场景）
-	Damage    int64           // 造成的伤害
-	Heal      int64           // 治疗量
-	IsCrit    bool            // 是否暴击
-	Targets   []score.IEntity // 命中的目标
-	HitCount  int32           // 命中次数
-	KilledAny bool            // 是否击杀了目标
+	Damage    int64            // 造成的伤害
+	Heal      int64            // 治疗量
+	IsCrit    bool             // 是否暴击
+	Targets   []izone2.IEntity // 命中的目标
+	HitCount  int32            // 命中次数
+	KilledAny bool             // 是否击杀了目标
 
 	// 扩展字段（特殊情况使用，使用 GlobalDataKey 避免拼写错误）
 	ExtraInt64  map[GlobalDataKey]int64
 	ExtraBool   map[GlobalDataKey]bool
-	ExtraEntity map[GlobalDataKey][]score.IEntity
+	ExtraEntity map[GlobalDataKey][]izone2.IEntity
 }
 
 // NewEffectResult 创建 Effect 结果
@@ -59,7 +59,7 @@ func NewEffectResult(seq int32) *EffectResult {
 		Seq:         seq,
 		ExtraInt64:  make(map[GlobalDataKey]int64),
 		ExtraBool:   make(map[GlobalDataKey]bool),
-		ExtraEntity: make(map[GlobalDataKey][]score.IEntity),
+		ExtraEntity: make(map[GlobalDataKey][]izone2.IEntity),
 	}
 }
 
@@ -68,8 +68,8 @@ type SkillContext struct {
 	destructionMs int64   // 对象销毁时间
 	isReset       bool
 
-	Scene score.IScene  // 当前场景
-	Owner score.IEntity // 技能拥有者
+	Zone  izone2.IZone   // 当前区域
+	Owner izone2.IEntity // 技能拥有者
 
 	Req        *pb.ReqCastSkill // 技能请求
 	SkillLevel int64            // 技能等级
@@ -93,10 +93,10 @@ type SkillContext struct {
 	// 使用 GlobalDataKey 类型作为 key，避免字符串拼写错误
 	globalInt64  map[GlobalDataKey]int64
 	globalBool   map[GlobalDataKey]bool
-	globalEntity map[GlobalDataKey][]score.IEntity
+	globalEntity map[GlobalDataKey][]izone2.IEntity
 }
 
-func NewSkillContext(owner score.IEntity, req *pb.ReqCastSkill, skillLevel int64) *SkillContext {
+func NewSkillContext(owner izone2.IEntity, req *pb.ReqCastSkill, skillLevel int64) *SkillContext {
 	ctx := &SkillContext{
 		id:            uid.Gen(),
 		Owner:         owner,
@@ -106,10 +106,10 @@ func NewSkillContext(owner score.IEntity, req *pb.ReqCastSkill, skillLevel int64
 		effectResults: make([]*EffectResult, 0, 16), // 预分配一些空间
 		globalInt64:   make(map[GlobalDataKey]int64),
 		globalBool:    make(map[GlobalDataKey]bool),
-		globalEntity:  make(map[GlobalDataKey][]score.IEntity),
+		globalEntity:  make(map[GlobalDataKey][]izone2.IEntity),
 	}
 	if owner != nil {
-		ctx.Scene = owner.GetScene()
+		ctx.Zone = owner.GetZone()
 	}
 	return ctx
 }
@@ -191,18 +191,18 @@ func (c *SkillContext) GetGlobalBool(key GlobalDataKey) (bool, bool) {
 }
 
 // SetGlobalEntities 设置全局实体列表
-func (c *SkillContext) SetGlobalEntities(key GlobalDataKey, entities []score.IEntity) {
+func (c *SkillContext) SetGlobalEntities(key GlobalDataKey, entities []izone2.IEntity) {
 	c.globalEntity[key] = entities
 }
 
 // GetGlobalEntities 获取全局实体列表
-func (c *SkillContext) GetGlobalEntities(key GlobalDataKey) ([]score.IEntity, bool) {
+func (c *SkillContext) GetGlobalEntities(key GlobalDataKey) ([]izone2.IEntity, bool) {
 	val, ok := c.globalEntity[key]
 	return val, ok
 }
 
 type skillEffect interface {
-	Begin(ctx *SkillContext, causer score.IEntity, targets []score.IEntity)
+	Begin(ctx *SkillContext, causer izone2.IEntity, targets []izone2.IEntity)
 	Update(ctx *SkillContext, delta time.Duration)
 	End(ctx *SkillContext)
 	Revert(ctx *SkillContext)

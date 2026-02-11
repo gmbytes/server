@@ -3,7 +3,7 @@ package combat
 import (
 	"server/lib/container"
 	"server/lib/uid"
-	"server/service/scene/entity/mod/combat/skill"
+	"server/service/world/zone/entity/mod/combat/skill"
 )
 
 // EffectManager 效果管理器

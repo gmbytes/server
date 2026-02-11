@@ -871,9 +871,9 @@
 
 ## 🔗 相关文档
 
-- [魔兽技能设计 README](./魔兽技能设计README.md)
-- [SkillContext 新设计说明](./SkillContext新设计说明.md)
-- [GlobalDataKey 使用指南](./GlobalDataKey使用指南.md)
+- [魔兽技能设计 README](魔兽技能设计README.md)
+- [SkillContext 新设计说明](SkillContext新设计说明.md)
+- [GlobalDataKey 使用指南](GlobalDataKey使用指南.md)
 - [技能执行流程详解](./技能执行流程详解.md)
 
 ---

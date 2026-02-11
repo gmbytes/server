@@ -1,8 +1,8 @@
-package score
+package izone
 
 import "server/lib/uid"
 
-type IScene interface {
+type IZone interface {
 	Init()
 	AddEntity(e IEntity)
 	RemoveEntity(id uid.Uid)

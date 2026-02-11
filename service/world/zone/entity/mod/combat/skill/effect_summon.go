@@ -2,7 +2,7 @@ package skill
 
 import (
 	"server/data/conf"
-	"server/service/scene/score"
+	"server/service/world/zone/izone"
 	"time"
 )
 
@@ -14,7 +14,7 @@ func NewSummonEffect(cfg conf.EffectCfg) *SummonEffect {
 	return &SummonEffect{cfg: cfg}
 }
 
-func (e *SummonEffect) Begin(ctx *SkillContext, causer score.IEntity, targets []score.IEntity) {
+func (e *SummonEffect) Begin(ctx *SkillContext, causer izone.IEntity, targets []izone.IEntity) {
 	_ = ctx
 	_ = causer
 	_ = targets

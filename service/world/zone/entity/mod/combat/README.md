@@ -86,7 +86,7 @@ type SkillContext struct {
     destructionMs int64            // 对象销毁时间
     isReset       bool
     
-    Scene      score.IScene       // 当前场景
+    Zone       score.IZone        // 当前区域
     Owner      score.IEntity      // 技能拥有者
     Req        *pb.ReqCastSkill   // 技能请求
     SkillLevel int64              // 技能等级

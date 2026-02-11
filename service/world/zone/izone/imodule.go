@@ -1,8 +1,8 @@
-package score
+package izone
 
 import "server/data"
 
 type IModule interface {
-	Init(onwer IEntity, initData data.EntityInitData)
+	Init(owner IEntity, initData data.EntityInitData)
 	Update(duration int64)
 }

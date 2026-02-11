@@ -2,7 +2,7 @@ package skill
 
 import (
 	"server/lib/uid"
-	"server/service/scene/score"
+	"server/service/world/zone/izone"
 	"time"
 )
 
@@ -25,8 +25,8 @@ type EffectRuntime struct {
 	Effect skillEffect   // 效果实例
 	Ctx    *SkillContext // 效果上下文
 
-	Caster  score.IEntity   // 施法者
-	Targets []score.IEntity // 目标列表
+	Caster  izone.IEntity   // 施法者
+	Targets []izone.IEntity // 目标列表
 
 	StartMs    int64 // 开始时间（毫秒时间戳）
 	EndMs      int64 // 结束时间（毫秒时间戳）
@@ -47,7 +47,7 @@ type EffectRuntime struct {
 }
 
 // NewEffectRuntime 创建效果运行时实例
-func NewEffectRuntime(effect skillEffect, ctx *SkillContext, caster score.IEntity, targets []score.IEntity) *EffectRuntime {
+func NewEffectRuntime(effect skillEffect, ctx *SkillContext, caster izone.IEntity, targets []izone.IEntity) *EffectRuntime {
 	return &EffectRuntime{
 		Id:      uid.Gen(),
 		Effect:  effect,

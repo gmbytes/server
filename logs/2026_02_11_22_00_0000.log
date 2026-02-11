@@ -1,0 +1,10 @@
+2026/02/11 22:52:31.17      0|                     INFO 2ACB6DD30000             Node E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) read config => boot name: GameNode host:  port: 0
+2026/02/11 22:52:31.19      0|                     INFO 2ACB6DD30000             Node E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) tcp listen at 127.0.0.1:51805, http listen at 127.0.0.1:51806, local IP: 127.0.0.1
+2026/02/11 22:52:31.19      0|                     INFO 2ACB6DD30000             Node E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) 1 services started
+2026/02/11 22:52:31.19      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) gate service starting
+2026/02/11 22:52:31.19      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) gate service started
+2026/02/11 22:52:31.19      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) start success
+2026/02/11 22:52:45.83      0|                     INFO 2ACB6DC3B680  ConsoleLifetime E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) SHUTDOWN APPLICATION BY SIGNAL...
+2026/02/11 22:52:45.83      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) gate service stopping
+2026/02/11 22:52:45.84      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) gate service stopped
+2026/02/11 22:52:45.84      0|                     INFO 2ACB6DD30140            *Gate E:/tools/game/snow/core/logging/handler/file/file_handler.go(162) stop success

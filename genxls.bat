@@ -1,1 +1,0 @@
-xls.exe --in ./excel --out ./data/xls --lang go --pkg xls

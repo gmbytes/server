@@ -2,6 +2,7 @@ package main
 
 import (
 	"server/service/gate"
+	"server/service/world/zone"
 
 	"github.com/gmbytes/snow/core/host"
 	"github.com/gmbytes/snow/core/host/builder"
@@ -21,17 +22,18 @@ func main() {
 			LocalIP:  "127.0.0.1",
 			Nodes: map[string]*node.ElementOption{
 				"GameNode": {
-					Services: []string{"Gate"},
+					Services: []string{"Gate", "Zone"},
 				},
 			},
 		}
 	})
 
-	// 注册 Node Routine 与 Gate 服务
+	// 注册 Node Routine 与 Gate、Zone 服务
 	node.AddNode(b, func() *node.RegisterOption {
 		return &node.RegisterOption{
 			ServiceRegisterInfos: []*node.ServiceRegisterInfo{
 				node.CheckedServiceRegisterInfoName[gate.Gate, *gate.Gate](1, "Gate"),
+				node.CheckedServiceRegisterInfoName[zone.Zone, *zone.Zone](2, "Zone"),
 			},
 		}
 	})

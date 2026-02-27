@@ -277,50 +277,6 @@ func (x *ReqCreateRole) GetName() string {
 	return ""
 }
 
-type ReqDeleteRole struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RoleId        int64                  `protobuf:"zigzag64,1,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ReqDeleteRole) Reset() {
-	*x = ReqDeleteRole{}
-	mi := &file_cmd_req_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ReqDeleteRole) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ReqDeleteRole) ProtoMessage() {}
-
-func (x *ReqDeleteRole) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_req_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ReqDeleteRole.ProtoReflect.Descriptor instead.
-func (*ReqDeleteRole) Descriptor() ([]byte, []int) {
-	return file_cmd_req_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *ReqDeleteRole) GetRoleId() int64 {
-	if x != nil {
-		return x.RoleId
-	}
-	return 0
-}
-
 type ReqLoginRole struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RoleId        int64                  `protobuf:"zigzag64,1,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"` // 要登录的角色id
@@ -330,7 +286,7 @@ type ReqLoginRole struct {
 
 func (x *ReqLoginRole) Reset() {
 	*x = ReqLoginRole{}
-	mi := &file_cmd_req_proto_msgTypes[3]
+	mi := &file_cmd_req_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -342,7 +298,7 @@ func (x *ReqLoginRole) String() string {
 func (*ReqLoginRole) ProtoMessage() {}
 
 func (x *ReqLoginRole) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_req_proto_msgTypes[3]
+	mi := &file_cmd_req_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -355,7 +311,7 @@ func (x *ReqLoginRole) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReqLoginRole.ProtoReflect.Descriptor instead.
 func (*ReqLoginRole) Descriptor() ([]byte, []int) {
-	return file_cmd_req_proto_rawDescGZIP(), []int{3}
+	return file_cmd_req_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ReqLoginRole) GetRoleId() int64 {
@@ -374,7 +330,7 @@ type ReqPing struct {
 
 func (x *ReqPing) Reset() {
 	*x = ReqPing{}
-	mi := &file_cmd_req_proto_msgTypes[4]
+	mi := &file_cmd_req_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -386,7 +342,7 @@ func (x *ReqPing) String() string {
 func (*ReqPing) ProtoMessage() {}
 
 func (x *ReqPing) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_req_proto_msgTypes[4]
+	mi := &file_cmd_req_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -399,7 +355,7 @@ func (x *ReqPing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReqPing.ProtoReflect.Descriptor instead.
 func (*ReqPing) Descriptor() ([]byte, []int) {
-	return file_cmd_req_proto_rawDescGZIP(), []int{4}
+	return file_cmd_req_proto_rawDescGZIP(), []int{3}
 }
 
 // 心跳(客户端切换后台发送该消息)
@@ -411,7 +367,7 @@ type ReqPingXXX struct {
 
 func (x *ReqPingXXX) Reset() {
 	*x = ReqPingXXX{}
-	mi := &file_cmd_req_proto_msgTypes[5]
+	mi := &file_cmd_req_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -423,7 +379,7 @@ func (x *ReqPingXXX) String() string {
 func (*ReqPingXXX) ProtoMessage() {}
 
 func (x *ReqPingXXX) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_req_proto_msgTypes[5]
+	mi := &file_cmd_req_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -436,29 +392,66 @@ func (x *ReqPingXXX) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReqPingXXX.ProtoReflect.Descriptor instead.
 func (*ReqPingXXX) Descriptor() ([]byte, []int) {
+	return file_cmd_req_proto_rawDescGZIP(), []int{4}
+}
+
+type ReqEnterZone struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReqEnterZone) Reset() {
+	*x = ReqEnterZone{}
+	mi := &file_cmd_req_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReqEnterZone) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReqEnterZone) ProtoMessage() {}
+
+func (x *ReqEnterZone) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_req_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReqEnterZone.ProtoReflect.Descriptor instead.
+func (*ReqEnterZone) Descriptor() ([]byte, []int) {
 	return file_cmd_req_proto_rawDescGZIP(), []int{5}
 }
 
-type ReqEnterScene struct {
+type ReqMove struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pos           *Vector                `protobuf:"bytes,1,opt,name=pos,proto3" json:"pos,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ReqEnterScene) Reset() {
-	*x = ReqEnterScene{}
+func (x *ReqMove) Reset() {
+	*x = ReqMove{}
 	mi := &file_cmd_req_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ReqEnterScene) String() string {
+func (x *ReqMove) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ReqEnterScene) ProtoMessage() {}
+func (*ReqMove) ProtoMessage() {}
 
-func (x *ReqEnterScene) ProtoReflect() protoreflect.Message {
+func (x *ReqMove) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_req_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -470,52 +463,24 @@ func (x *ReqEnterScene) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ReqEnterScene.ProtoReflect.Descriptor instead.
-func (*ReqEnterScene) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReqMove.ProtoReflect.Descriptor instead.
+func (*ReqMove) Descriptor() ([]byte, []int) {
 	return file_cmd_req_proto_rawDescGZIP(), []int{6}
 }
 
-type ReqTestEnter struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ReqTestEnter) Reset() {
-	*x = ReqTestEnter{}
-	mi := &file_cmd_req_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ReqTestEnter) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ReqTestEnter) ProtoMessage() {}
-
-func (x *ReqTestEnter) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_req_proto_msgTypes[7]
+func (x *ReqMove) GetPos() *Vector {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.Pos
 	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ReqTestEnter.ProtoReflect.Descriptor instead.
-func (*ReqTestEnter) Descriptor() ([]byte, []int) {
-	return file_cmd_req_proto_rawDescGZIP(), []int{7}
+	return nil
 }
 
 var File_cmd_req_proto protoreflect.FileDescriptor
 
 const file_cmd_req_proto_rawDesc = "" +
 	"\n" +
-	"\rcmd_req.proto\x12\x02pb\"\x86\x04\n" +
+	"\rcmd_req.proto\x12\x02pb\x1a\n" +
+	"data.proto\"\x86\x04\n" +
 	"\bReqLogin\x12\x12\n" +
 	"\x04fast\x18\x01 \x01(\bR\x04fast\x12\x14\n" +
 	"\x05magic\x18\x02 \x01(\x12R\x05magic\x12\x1c\n" +
@@ -543,16 +508,16 @@ const file_cmd_req_proto_rawDesc = "" +
 	"\x02ip\x18\x15 \x01(\tR\x02ip\"5\n" +
 	"\rReqCreateRole\x12\x10\n" +
 	"\x03cid\x18\x01 \x01(\x12R\x03cid\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"(\n" +
-	"\rReqDeleteRole\x12\x17\n" +
-	"\arole_id\x18\x01 \x01(\x12R\x06roleId\"'\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"'\n" +
 	"\fReqLoginRole\x12\x17\n" +
 	"\arole_id\x18\x01 \x01(\x12R\x06roleId\"\t\n" +
 	"\aReqPing\"\f\n" +
 	"\n" +
-	"ReqPingXXX\"\x0f\n" +
-	"\rReqEnterScene\"\x0e\n" +
-	"\fReqTestEnterB\vZ\tserver/pbb\x06proto3"
+	"ReqPingXXX\"\x0e\n" +
+	"\fReqEnterZone\"'\n" +
+	"\aReqMove\x12\x1c\n" +
+	"\x03pos\x18\x01 \x01(\v2\n" +
+	".pb.VectorR\x03posB\vZ\tserver/pbb\x06proto3"
 
 var (
 	file_cmd_req_proto_rawDescOnce sync.Once
@@ -566,23 +531,24 @@ func file_cmd_req_proto_rawDescGZIP() []byte {
 	return file_cmd_req_proto_rawDescData
 }
 
-var file_cmd_req_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_cmd_req_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_cmd_req_proto_goTypes = []any{
 	(*ReqLogin)(nil),      // 0: pb.ReqLogin
 	(*ReqCreateRole)(nil), // 1: pb.ReqCreateRole
-	(*ReqDeleteRole)(nil), // 2: pb.ReqDeleteRole
-	(*ReqLoginRole)(nil),  // 3: pb.ReqLoginRole
-	(*ReqPing)(nil),       // 4: pb.ReqPing
-	(*ReqPingXXX)(nil),    // 5: pb.ReqPingXXX
-	(*ReqEnterScene)(nil), // 6: pb.ReqEnterScene
-	(*ReqTestEnter)(nil),  // 7: pb.ReqTestEnter
+	(*ReqLoginRole)(nil),  // 2: pb.ReqLoginRole
+	(*ReqPing)(nil),       // 3: pb.ReqPing
+	(*ReqPingXXX)(nil),    // 4: pb.ReqPingXXX
+	(*ReqEnterZone)(nil),  // 5: pb.ReqEnterZone
+	(*ReqMove)(nil),       // 6: pb.ReqMove
+	(*Vector)(nil),        // 7: pb.Vector
 }
 var file_cmd_req_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	7, // 0: pb.ReqMove.pos:type_name -> pb.Vector
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_cmd_req_proto_init() }
@@ -590,13 +556,14 @@ func file_cmd_req_proto_init() {
 	if File_cmd_req_proto != nil {
 		return
 	}
+	file_data_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cmd_req_proto_rawDesc), len(file_cmd_req_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

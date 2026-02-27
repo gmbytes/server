@@ -4,6 +4,9 @@
 package pb
 
 import (
+	"encoding/binary"
+	"errors"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -11,6 +14,65 @@ var _parser = NewParser()
 
 func init() {
 	_parser.Load()
+}
+
+type message interface {
+	proto.Message
+
+	Key() EKey_T
+}
+
+type Package struct {
+	msg   message
+	err   EErrorCode_T
+	bytes []byte
+}
+
+func NewPackage(msg proto.Message, errs ...EErrorCode_T) *Package {
+	err := EErrorCode_Ok
+	if len(errs) != 0 {
+		err = errs[0]
+	}
+	return &Package{
+		msg: msg.(message),
+		err: err,
+	}
+}
+
+func (p *Package) Key() EKey_T {
+	return p.msg.Key()
+}
+
+func (p *Package) Marshal() ([]byte, error) {
+	if len(p.bytes) != 0 {
+		return p.bytes, nil
+	}
+
+	if p.msg == nil {
+		return nil, errors.New("message is nil")
+	}
+
+	bytes := make([]byte, 4, 8)
+
+	binary.LittleEndian.PutUint16(bytes[0:], uint16(p.msg.Key()))
+	binary.LittleEndian.PutUint16(bytes[2:], uint16(p.err))
+
+	if p.err != EErrorCode_Ok {
+		return bytes, nil
+	}
+
+	body, marshalErr := proto.Marshal(p.msg)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+
+	bodyLen := uint32(len(body))
+	bytes = append(bytes, 0, 0, 0, 0)
+	binary.LittleEndian.PutUint32(bytes[4:], bodyLen)
+	bytes = append(bytes, body...)
+	p.bytes = bytes
+
+	return bytes, nil
 }
 
 func Unmarshal(key EKey_T, data []byte) proto.Message {
@@ -59,113 +121,201 @@ func (p *parser) Unmarshal(key EKey_T, data []byte) proto.Message {
 func (p *parser) Load() {
 	p.Register(EKey_Login, func() proto.Message { return &ReqLogin{} })
 	p.Register(EKey_CreateRole, func() proto.Message { return &ReqCreateRole{} })
-	p.Register(EKey_DeleteRole, func() proto.Message { return &ReqDeleteRole{} })
 	p.Register(EKey_LoginRole, func() proto.Message { return &ReqLoginRole{} })
 	p.Register(EKey_Ping, func() proto.Message { return &ReqPing{} })
 	p.Register(EKey_PingXXX, func() proto.Message { return &ReqPingXXX{} })
-	p.Register(EKey_EnterScene, func() proto.Message { return &ReqEnterScene{} })
-	p.Register(EKey_TestEnter, func() proto.Message { return &ReqTestEnter{} })
+	p.Register(EKey_EnterZone, func() proto.Message { return &ReqEnterZone{} })
+	p.Register(EKey_Move, func() proto.Message { return &ReqMove{} })
 	p.Register(EKey_Login, func() proto.Message { return &RspLogin{} })
 	p.Register(EKey_CreateRole, func() proto.Message { return &RspCreateRole{} })
-	p.Register(EKey_DeleteRole, func() proto.Message { return &RspDeleteRole{} })
 	p.Register(EKey_LoginRole, func() proto.Message { return &RspLoginRole{} })
 	p.Register(EKey_Ping, func() proto.Message { return &RspPing{} })
 	p.Register(EKey_PingXXX, func() proto.Message { return &RspPingXXX{} })
-	p.Register(EKey_EnterScene, func() proto.Message { return &RspEnterScene{} })
-	p.Register(EKey_TestEnter, func() proto.Message { return &RspTestEnter{} })
+	p.Register(EKey_EnterZone, func() proto.Message { return &RspEnterZone{} })
+	p.Register(EKey_Move, func() proto.Message { return &RspMove{} })
+	p.Register(EKey_SyncBegin, func() proto.Message { return &DspSyncBegin{} })
+	p.Register(EKey_SyncEnd, func() proto.Message { return &DspSyncEnd{} })
 	p.Register(EKey_LoginFast, func() proto.Message { return &DspLoginFast{} })
 	p.Register(EKey_LoginData, func() proto.Message { return &DspLoginData{} })
 	p.Register(EKey_ServerMaintain, func() proto.Message { return &DspServerMaintain{} })
 	p.Register(EKey_KickRole, func() proto.Message { return &DspKickRole{} })
-	p.Register(EKey_PreparedEnterScene, func() proto.Message { return &DspPreparedEnterScene{} })
-	p.Register(EKey_Test, func() proto.Message { return &DspTest{} })
+	p.Register(EKey_PreparedEnterZone, func() proto.Message { return &DspPreparedEnterZone{} })
+	p.Register(EKey_SyncMove, func() proto.Message { return &DspSyncMove{} })
 }
 
 func (msg *ReqLogin) Key() EKey_T {
 	return EKey_Login
 }
 
+func (msg *ReqLogin) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *ReqCreateRole) Key() EKey_T {
 	return EKey_CreateRole
 }
 
-func (msg *ReqDeleteRole) Key() EKey_T {
-	return EKey_DeleteRole
+func (msg *ReqCreateRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *ReqLoginRole) Key() EKey_T {
 	return EKey_LoginRole
 }
 
+func (msg *ReqLoginRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *ReqPing) Key() EKey_T {
 	return EKey_Ping
+}
+
+func (msg *ReqPing) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *ReqPingXXX) Key() EKey_T {
 	return EKey_PingXXX
 }
 
-func (msg *ReqEnterScene) Key() EKey_T {
-	return EKey_EnterScene
+func (msg *ReqPingXXX) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
-func (msg *ReqTestEnter) Key() EKey_T {
-	return EKey_TestEnter
+func (msg *ReqEnterZone) Key() EKey_T {
+	return EKey_EnterZone
+}
+
+func (msg *ReqEnterZone) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *ReqMove) Key() EKey_T {
+	return EKey_Move
+}
+
+func (msg *ReqMove) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *RspLogin) Key() EKey_T {
 	return EKey_Login
 }
 
+func (msg *RspLogin) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *RspCreateRole) Key() EKey_T {
 	return EKey_CreateRole
 }
 
-func (msg *RspDeleteRole) Key() EKey_T {
-	return EKey_DeleteRole
+func (msg *RspCreateRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *RspLoginRole) Key() EKey_T {
 	return EKey_LoginRole
 }
 
+func (msg *RspLoginRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *RspPing) Key() EKey_T {
 	return EKey_Ping
+}
+
+func (msg *RspPing) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *RspPingXXX) Key() EKey_T {
 	return EKey_PingXXX
 }
 
-func (msg *RspEnterScene) Key() EKey_T {
-	return EKey_EnterScene
+func (msg *RspPingXXX) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
-func (msg *RspTestEnter) Key() EKey_T {
-	return EKey_TestEnter
+func (msg *RspEnterZone) Key() EKey_T {
+	return EKey_EnterZone
+}
+
+func (msg *RspEnterZone) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *RspMove) Key() EKey_T {
+	return EKey_Move
+}
+
+func (msg *RspMove) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *DspSyncBegin) Key() EKey_T {
+	return EKey_SyncBegin
+}
+
+func (msg *DspSyncBegin) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *DspSyncEnd) Key() EKey_T {
+	return EKey_SyncEnd
+}
+
+func (msg *DspSyncEnd) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *DspLoginFast) Key() EKey_T {
 	return EKey_LoginFast
 }
 
+func (msg *DspLoginFast) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *DspLoginData) Key() EKey_T {
 	return EKey_LoginData
+}
+
+func (msg *DspLoginData) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
 func (msg *DspServerMaintain) Key() EKey_T {
 	return EKey_ServerMaintain
 }
 
+func (msg *DspServerMaintain) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
 func (msg *DspKickRole) Key() EKey_T {
 	return EKey_KickRole
 }
 
-func (msg *DspPreparedEnterScene) Key() EKey_T {
-	return EKey_PreparedEnterScene
+func (msg *DspKickRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 
-func (msg *DspTest) Key() EKey_T {
-	return EKey_Test
+func (msg *DspPreparedEnterZone) Key() EKey_T {
+	return EKey_PreparedEnterZone
+}
+
+func (msg *DspPreparedEnterZone) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *DspSyncMove) Key() EKey_T {
+	return EKey_SyncMove
+}
+
+func (msg *DspSyncMove) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
 }
 

@@ -173,58 +173,6 @@ func (x *RspCreateRole) GetRole() *RoleSummaryData {
 	return nil
 }
 
-type RspDeleteRole struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Err           EErrorCode_T           `protobuf:"varint,1,opt,name=err,proto3,enum=pb.EErrorCode_T" json:"err,omitempty"`
-	RoleId        int64                  `protobuf:"zigzag64,2,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RspDeleteRole) Reset() {
-	*x = RspDeleteRole{}
-	mi := &file_cmd_rsp_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RspDeleteRole) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RspDeleteRole) ProtoMessage() {}
-
-func (x *RspDeleteRole) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_rsp_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RspDeleteRole.ProtoReflect.Descriptor instead.
-func (*RspDeleteRole) Descriptor() ([]byte, []int) {
-	return file_cmd_rsp_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *RspDeleteRole) GetErr() EErrorCode_T {
-	if x != nil {
-		return x.Err
-	}
-	return EErrorCode_Ok
-}
-
-func (x *RspDeleteRole) GetRoleId() int64 {
-	if x != nil {
-		return x.RoleId
-	}
-	return 0
-}
-
 // 角色进入游戏
 type RspLoginRole struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -236,7 +184,7 @@ type RspLoginRole struct {
 
 func (x *RspLoginRole) Reset() {
 	*x = RspLoginRole{}
-	mi := &file_cmd_rsp_proto_msgTypes[3]
+	mi := &file_cmd_rsp_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -248,7 +196,7 @@ func (x *RspLoginRole) String() string {
 func (*RspLoginRole) ProtoMessage() {}
 
 func (x *RspLoginRole) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_rsp_proto_msgTypes[3]
+	mi := &file_cmd_rsp_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -261,7 +209,7 @@ func (x *RspLoginRole) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RspLoginRole.ProtoReflect.Descriptor instead.
 func (*RspLoginRole) Descriptor() ([]byte, []int) {
-	return file_cmd_rsp_proto_rawDescGZIP(), []int{3}
+	return file_cmd_rsp_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RspLoginRole) GetErr() EErrorCode_T {
@@ -287,7 +235,7 @@ type RspPing struct {
 
 func (x *RspPing) Reset() {
 	*x = RspPing{}
-	mi := &file_cmd_rsp_proto_msgTypes[4]
+	mi := &file_cmd_rsp_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -299,7 +247,7 @@ func (x *RspPing) String() string {
 func (*RspPing) ProtoMessage() {}
 
 func (x *RspPing) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_rsp_proto_msgTypes[4]
+	mi := &file_cmd_rsp_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -312,7 +260,7 @@ func (x *RspPing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RspPing.ProtoReflect.Descriptor instead.
 func (*RspPing) Descriptor() ([]byte, []int) {
-	return file_cmd_rsp_proto_rawDescGZIP(), []int{4}
+	return file_cmd_rsp_proto_rawDescGZIP(), []int{3}
 }
 
 // 心跳(客户端切换后台发送该消息)
@@ -324,7 +272,7 @@ type RspPingXXX struct {
 
 func (x *RspPingXXX) Reset() {
 	*x = RspPingXXX{}
-	mi := &file_cmd_rsp_proto_msgTypes[5]
+	mi := &file_cmd_rsp_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -336,7 +284,7 @@ func (x *RspPingXXX) String() string {
 func (*RspPingXXX) ProtoMessage() {}
 
 func (x *RspPingXXX) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_rsp_proto_msgTypes[5]
+	mi := &file_cmd_rsp_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -349,29 +297,67 @@ func (x *RspPingXXX) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RspPingXXX.ProtoReflect.Descriptor instead.
 func (*RspPingXXX) Descriptor() ([]byte, []int) {
+	return file_cmd_rsp_proto_rawDescGZIP(), []int{4}
+}
+
+type RspEnterZone struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RspEnterZone) Reset() {
+	*x = RspEnterZone{}
+	mi := &file_cmd_rsp_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RspEnterZone) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RspEnterZone) ProtoMessage() {}
+
+func (x *RspEnterZone) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_rsp_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RspEnterZone.ProtoReflect.Descriptor instead.
+func (*RspEnterZone) Descriptor() ([]byte, []int) {
 	return file_cmd_rsp_proto_rawDescGZIP(), []int{5}
 }
 
-type RspEnterScene struct {
+type RspMove struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoleId        int64                  `protobuf:"varint,1,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"` // 角色id
+	Pos           *Vector                `protobuf:"bytes,2,opt,name=pos,proto3" json:"pos,omitempty"`                      // 位置
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RspEnterScene) Reset() {
-	*x = RspEnterScene{}
+func (x *RspMove) Reset() {
+	*x = RspMove{}
 	mi := &file_cmd_rsp_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RspEnterScene) String() string {
+func (x *RspMove) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RspEnterScene) ProtoMessage() {}
+func (*RspMove) ProtoMessage() {}
 
-func (x *RspEnterScene) ProtoReflect() protoreflect.Message {
+func (x *RspMove) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_rsp_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -383,45 +369,23 @@ func (x *RspEnterScene) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RspEnterScene.ProtoReflect.Descriptor instead.
-func (*RspEnterScene) Descriptor() ([]byte, []int) {
+// Deprecated: Use RspMove.ProtoReflect.Descriptor instead.
+func (*RspMove) Descriptor() ([]byte, []int) {
 	return file_cmd_rsp_proto_rawDescGZIP(), []int{6}
 }
 
-type RspTestEnter struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RspTestEnter) Reset() {
-	*x = RspTestEnter{}
-	mi := &file_cmd_rsp_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RspTestEnter) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RspTestEnter) ProtoMessage() {}
-
-func (x *RspTestEnter) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_rsp_proto_msgTypes[7]
+func (x *RspMove) GetRoleId() int64 {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.RoleId
 	}
-	return mi.MessageOf(x)
+	return 0
 }
 
-// Deprecated: Use RspTestEnter.ProtoReflect.Descriptor instead.
-func (*RspTestEnter) Descriptor() ([]byte, []int) {
-	return file_cmd_rsp_proto_rawDescGZIP(), []int{7}
+func (x *RspMove) GetPos() *Vector {
+	if x != nil {
+		return x.Pos
+	}
+	return nil
 }
 
 var File_cmd_rsp_proto protoreflect.FileDescriptor
@@ -444,18 +408,18 @@ const file_cmd_rsp_proto_rawDesc = "" +
 	"serverTime\"\\\n" +
 	"\rRspCreateRole\x12\"\n" +
 	"\x03err\x18\x01 \x01(\x0e2\x10.pb.EErrorCode.TR\x03err\x12'\n" +
-	"\x04role\x18\x02 \x01(\v2\x13.pb.RoleSummaryDataR\x04role\"L\n" +
-	"\rRspDeleteRole\x12\"\n" +
-	"\x03err\x18\x01 \x01(\x0e2\x10.pb.EErrorCode.TR\x03err\x12\x17\n" +
-	"\arole_id\x18\x02 \x01(\x12R\x06roleId\"U\n" +
+	"\x04role\x18\x02 \x01(\v2\x13.pb.RoleSummaryDataR\x04role\"U\n" +
 	"\fRspLoginRole\x12\"\n" +
 	"\x03err\x18\x01 \x01(\x0e2\x10.pb.EErrorCode.TR\x03err\x12!\n" +
 	"\x04data\x18\x02 \x01(\v2\r.pb.LoginDataR\x04data\"\t\n" +
 	"\aRspPing\"\f\n" +
 	"\n" +
-	"RspPingXXX\"\x0f\n" +
-	"\rRspEnterScene\"\x0e\n" +
-	"\fRspTestEnterB\vZ\tserver/pbb\x06proto3"
+	"RspPingXXX\"\x0e\n" +
+	"\fRspEnterZone\"@\n" +
+	"\aRspMove\x12\x17\n" +
+	"\arole_id\x18\x01 \x01(\x03R\x06roleId\x12\x1c\n" +
+	"\x03pos\x18\x02 \x01(\v2\n" +
+	".pb.VectorR\x03posB\vZ\tserver/pbb\x06proto3"
 
 var (
 	file_cmd_rsp_proto_rawDescOnce sync.Once
@@ -469,28 +433,28 @@ func file_cmd_rsp_proto_rawDescGZIP() []byte {
 	return file_cmd_rsp_proto_rawDescData
 }
 
-var file_cmd_rsp_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_cmd_rsp_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_cmd_rsp_proto_goTypes = []any{
 	(*RspLogin)(nil),        // 0: pb.RspLogin
 	(*RspCreateRole)(nil),   // 1: pb.RspCreateRole
-	(*RspDeleteRole)(nil),   // 2: pb.RspDeleteRole
-	(*RspLoginRole)(nil),    // 3: pb.RspLoginRole
-	(*RspPing)(nil),         // 4: pb.RspPing
-	(*RspPingXXX)(nil),      // 5: pb.RspPingXXX
-	(*RspEnterScene)(nil),   // 6: pb.RspEnterScene
-	(*RspTestEnter)(nil),    // 7: pb.RspTestEnter
-	(EErrorCode_T)(0),       // 8: pb.EErrorCode.T
-	(*RoleSummaryData)(nil), // 9: pb.RoleSummaryData
-	(*LoginData)(nil),       // 10: pb.LoginData
+	(*RspLoginRole)(nil),    // 2: pb.RspLoginRole
+	(*RspPing)(nil),         // 3: pb.RspPing
+	(*RspPingXXX)(nil),      // 4: pb.RspPingXXX
+	(*RspEnterZone)(nil),    // 5: pb.RspEnterZone
+	(*RspMove)(nil),         // 6: pb.RspMove
+	(EErrorCode_T)(0),       // 7: pb.EErrorCode.T
+	(*RoleSummaryData)(nil), // 8: pb.RoleSummaryData
+	(*LoginData)(nil),       // 9: pb.LoginData
+	(*Vector)(nil),          // 10: pb.Vector
 }
 var file_cmd_rsp_proto_depIdxs = []int32{
-	8,  // 0: pb.RspLogin.err:type_name -> pb.EErrorCode.T
-	9,  // 1: pb.RspLogin.roles:type_name -> pb.RoleSummaryData
-	8,  // 2: pb.RspCreateRole.err:type_name -> pb.EErrorCode.T
-	9,  // 3: pb.RspCreateRole.role:type_name -> pb.RoleSummaryData
-	8,  // 4: pb.RspDeleteRole.err:type_name -> pb.EErrorCode.T
-	8,  // 5: pb.RspLoginRole.err:type_name -> pb.EErrorCode.T
-	10, // 6: pb.RspLoginRole.data:type_name -> pb.LoginData
+	7,  // 0: pb.RspLogin.err:type_name -> pb.EErrorCode.T
+	8,  // 1: pb.RspLogin.roles:type_name -> pb.RoleSummaryData
+	7,  // 2: pb.RspCreateRole.err:type_name -> pb.EErrorCode.T
+	8,  // 3: pb.RspCreateRole.role:type_name -> pb.RoleSummaryData
+	7,  // 4: pb.RspLoginRole.err:type_name -> pb.EErrorCode.T
+	9,  // 5: pb.RspLoginRole.data:type_name -> pb.LoginData
+	10, // 6: pb.RspMove.pos:type_name -> pb.Vector
 	7,  // [7:7] is the sub-list for method output_type
 	7,  // [7:7] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
@@ -511,7 +475,7 @@ func file_cmd_rsp_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cmd_rsp_proto_rawDesc), len(file_cmd_rsp_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

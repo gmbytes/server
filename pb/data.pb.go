@@ -557,9 +557,9 @@ func (x *Attr) GetRate() int64 {
 
 type Vector struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	X             float64                `protobuf:"fixed64,1,opt,name=x,proto3" json:"x,omitempty"`
-	Y             float64                `protobuf:"fixed64,2,opt,name=y,proto3" json:"y,omitempty"`
-	Z             float64                `protobuf:"fixed64,3,opt,name=z,proto3" json:"z,omitempty"`
+	X             int64                  `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y             int64                  `protobuf:"varint,2,opt,name=y,proto3" json:"y,omitempty"`
+	Z             int64                  `protobuf:"varint,3,opt,name=z,proto3" json:"z,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -594,21 +594,21 @@ func (*Vector) Descriptor() ([]byte, []int) {
 	return file_data_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *Vector) GetX() float64 {
+func (x *Vector) GetX() int64 {
 	if x != nil {
 		return x.X
 	}
 	return 0
 }
 
-func (x *Vector) GetY() float64 {
+func (x *Vector) GetY() int64 {
 	if x != nil {
 		return x.Y
 	}
 	return 0
 }
 
-func (x *Vector) GetZ() float64 {
+func (x *Vector) GetZ() int64 {
 	if x != nil {
 		return x.Z
 	}
@@ -667,9 +667,9 @@ const file_data_proto_rawDesc = "" +
 	"\x03val\x18\x02 \x01(\x12R\x03val\x12\x12\n" +
 	"\x04rate\x18\x03 \x01(\x12R\x04rate\"2\n" +
 	"\x06Vector\x12\f\n" +
-	"\x01x\x18\x01 \x01(\x01R\x01x\x12\f\n" +
-	"\x01y\x18\x02 \x01(\x01R\x01y\x12\f\n" +
-	"\x01z\x18\x03 \x01(\x01R\x01zB\vZ\tserver/pbb\x06proto3"
+	"\x01x\x18\x01 \x01(\x03R\x01x\x12\f\n" +
+	"\x01y\x18\x02 \x01(\x03R\x01y\x12\f\n" +
+	"\x01z\x18\x03 \x01(\x03R\x01zB\vZ\tserver/pbb\x06proto3"
 
 var (
 	file_data_proto_rawDescOnce sync.Once

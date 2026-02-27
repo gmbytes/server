@@ -1,9 +1,9 @@
 package main
 
 import (
-	"server/service/gate"
-	"server/service/world/zone"
+	"server/lib/pkg"
 
+	"github.com/gmbytes/snow/core/configuration/sources"
 	"github.com/gmbytes/snow/core/host"
 	"github.com/gmbytes/snow/core/host/builder"
 	"github.com/gmbytes/snow/routines/ignore_input"
@@ -12,31 +12,28 @@ import (
 
 func main() {
 	b := builder.NewDefaultBuilder()
+
+	// 加载 YAML 配置文件
+	b.GetConfigurationManager().AddSource(&sources.YamlConfigurationSource{
+		Path:           "conf/app.yml",
+		Optional:       true, // 如果文件不存在也不报错
+		ReloadOnChange: true, // 支持热更新
+	})
+
 	host.AddHostedRoutine[*ignore_input.IgnoreInput](b)
 
-	// 节点配置：当前启动节点名与要运行的服务
+	// 节点配置：从 app.yml 读取，如果没有配置则使用默认值
 	host.AddOption[*node.Option](b, "Node")
-	host.AddOptionFactory[*node.Option](b, func() *node.Option {
-		return &node.Option{
-			BootName: "GameNode",
-			LocalIP:  "127.0.0.1",
-			Nodes: map[string]*node.ElementOption{
-				"GameNode": {
-					Services: []string{"Gate", "Zone"},
-				},
-			},
+
+	node.RegisterService(b, func(opt *node.RegisterOption) {
+		opt.ServerHandlePreprocessor = pkg.ServerPkgPreprocessor
+		opt.ClientHandlePreprocessor = pkg.ClientPkgPreprocessor
+		//MetricCollector:          host.GetRoutine[*metrics.Meter](b.GetRoutineProvider()),
+		opt.PostInitializer = func() {
+			//if len(app.GameConfigPath) > 0 {
+			//	_ = conf.GetConfig()
+			//}
 		}
 	})
-
-	// 注册 Node Routine 与 Gate、Zone 服务
-	node.AddNode(b, func() *node.RegisterOption {
-		return &node.RegisterOption{
-			ServiceRegisterInfos: []*node.ServiceRegisterInfo{
-				node.CheckedServiceRegisterInfoName[gate.Gate, *gate.Gate](1, "Gate"),
-				node.CheckedServiceRegisterInfoName[zone.Zone, *zone.Zone](2, "Zone"),
-			},
-		}
-	})
-
 	host.Run(b.Build())
 }

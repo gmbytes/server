@@ -10,6 +10,10 @@ import (
 	"github.com/gmbytes/snow/routines/node"
 )
 
+func init() {
+	node.Register[Zone, *Zone]("Zone")
+}
+
 var _ izone.IZone = (*Zone)(nil)
 
 // Zone 基于 snow node.Service 的区服逻辑服务，可被 RPC/HTTP 调用。
@@ -53,8 +57,11 @@ func (ss *Zone) Start(_ any) {
 }
 
 // Stop 服务关闭时调用，与消息处理同线程。
-func (ss *Zone) Stop(_ *sync.WaitGroup) {
+func (ss *Zone) Stop(wg *sync.WaitGroup) {
 	ss.Infof("zone service stopping")
+	// wg 由 node.Service.stop 外层统一收敛。
+	// 当前无异步清理任务；若后续引入异步逻辑，请在此处显式 wg.Add/Done 配对。
+	_ = wg
 }
 
 // AfterStop 服务完全关闭后调用，此时不再处理任何消息。

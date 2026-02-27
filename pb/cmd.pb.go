@@ -28,19 +28,20 @@ const (
 	// login
 	EKey_Login      EKey_T = 1
 	EKey_CreateRole EKey_T = 2
-	EKey_DeleteRole EKey_T = 3
 	EKey_LoginRole  EKey_T = 4
 	EKey_Ping       EKey_T = 10 // 心跳
 	EKey_PingXXX    EKey_T = 11 // 心跳(客户端切换后台发送该消息)
-	EKey_EnterScene EKey_T = 20 // 通知服务器已经进入场景
-	EKey_TestEnter  EKey_T = 21 // ceshi
+	EKey_EnterZone  EKey_T = 20 // 通知服务器已经进入场景
+	EKey_Move       EKey_T = 21 // 移动
 	// dsp start
-	EKey_LoginFast          EKey_T = 40000 // 同步快速重登 token
-	EKey_LoginData          EKey_T = 40001 // 同步玩家登录数据
-	EKey_ServerMaintain     EKey_T = 40002 // 同步玩家登录数据
-	EKey_KickRole           EKey_T = 40003 // 踢玩家下线
-	EKey_PreparedEnterScene EKey_T = 40004 // 准备进入场景
-	EKey_Test               EKey_T = 40005 // 测试
+	EKey_SyncBegin         EKey_T = 32768 // 所有的同步消息的起始值
+	EKey_LoginFast         EKey_T = 33000 // 同步快速重登 token
+	EKey_LoginData         EKey_T = 33001 // 同步玩家登录数据
+	EKey_ServerMaintain    EKey_T = 33002 // 同步玩家登录数据
+	EKey_KickRole          EKey_T = 33003 // 踢玩家下线
+	EKey_PreparedEnterZone EKey_T = 33004 // 准备进入场景
+	EKey_SyncMove          EKey_T = 33005 // 同步玩家移动
+	EKey_SyncEnd           EKey_T = 49151 // 同步消息的结束值
 	// 0xF000 及以上为服务器保留用
 	EKey_Max EKey_T = 65535
 )
@@ -51,37 +52,39 @@ var (
 		0:     "Invalid",
 		1:     "Login",
 		2:     "CreateRole",
-		3:     "DeleteRole",
 		4:     "LoginRole",
 		10:    "Ping",
 		11:    "PingXXX",
-		20:    "EnterScene",
-		21:    "TestEnter",
-		40000: "LoginFast",
-		40001: "LoginData",
-		40002: "ServerMaintain",
-		40003: "KickRole",
-		40004: "PreparedEnterScene",
-		40005: "Test",
+		20:    "EnterZone",
+		21:    "Move",
+		32768: "SyncBegin",
+		33000: "LoginFast",
+		33001: "LoginData",
+		33002: "ServerMaintain",
+		33003: "KickRole",
+		33004: "PreparedEnterZone",
+		33005: "SyncMove",
+		49151: "SyncEnd",
 		65535: "Max",
 	}
 	EKey_T_value = map[string]int32{
-		"Invalid":            0,
-		"Login":              1,
-		"CreateRole":         2,
-		"DeleteRole":         3,
-		"LoginRole":          4,
-		"Ping":               10,
-		"PingXXX":            11,
-		"EnterScene":         20,
-		"TestEnter":          21,
-		"LoginFast":          40000,
-		"LoginData":          40001,
-		"ServerMaintain":     40002,
-		"KickRole":           40003,
-		"PreparedEnterScene": 40004,
-		"Test":               40005,
-		"Max":                65535,
+		"Invalid":           0,
+		"Login":             1,
+		"CreateRole":        2,
+		"LoginRole":         4,
+		"Ping":              10,
+		"PingXXX":           11,
+		"EnterZone":         20,
+		"Move":              21,
+		"SyncBegin":         32768,
+		"LoginFast":         33000,
+		"LoginData":         33001,
+		"ServerMaintain":    33002,
+		"KickRole":          33003,
+		"PreparedEnterZone": 33004,
+		"SyncMove":          33005,
+		"SyncEnd":           49151,
+		"Max":               65535,
 	}
 )
 
@@ -152,29 +155,27 @@ var File_cmd_proto protoreflect.FileDescriptor
 
 const file_cmd_proto_rawDesc = "" +
 	"\n" +
-	"\tcmd.proto\x12\x02pb\"\x82\x02\n" +
-	"\x04EKey\"\xf9\x01\n" +
+	"\tcmd.proto\x12\x02pb\"\x8f\x02\n" +
+	"\x04EKey\"\x86\x02\n" +
 	"\x01T\x12\v\n" +
 	"\aInvalid\x10\x00\x12\t\n" +
 	"\x05Login\x10\x01\x12\x0e\n" +
 	"\n" +
-	"CreateRole\x10\x02\x12\x0e\n" +
-	"\n" +
-	"DeleteRole\x10\x03\x12\r\n" +
+	"CreateRole\x10\x02\x12\r\n" +
 	"\tLoginRole\x10\x04\x12\b\n" +
 	"\x04Ping\x10\n" +
 	"\x12\v\n" +
-	"\aPingXXX\x10\v\x12\x0e\n" +
-	"\n" +
-	"EnterScene\x10\x14\x12\r\n" +
-	"\tTestEnter\x10\x15\x12\x0f\n" +
-	"\tLoginFast\x10\xc0\xb8\x02\x12\x0f\n" +
-	"\tLoginData\x10\xc1\xb8\x02\x12\x14\n" +
-	"\x0eServerMaintain\x10¸\x02\x12\x0e\n" +
-	"\bKickRole\x10ø\x02\x12\x18\n" +
-	"\x12PreparedEnterScene\x10ĸ\x02\x12\n" +
-	"\n" +
-	"\x04Test\x10Ÿ\x02\x12\t\n" +
+	"\aPingXXX\x10\v\x12\r\n" +
+	"\tEnterZone\x10\x14\x12\b\n" +
+	"\x04Move\x10\x15\x12\x0f\n" +
+	"\tSyncBegin\x10\x80\x80\x02\x12\x0f\n" +
+	"\tLoginFast\x10\xe8\x81\x02\x12\x0f\n" +
+	"\tLoginData\x10\xe9\x81\x02\x12\x14\n" +
+	"\x0eServerMaintain\x10\xea\x81\x02\x12\x0e\n" +
+	"\bKickRole\x10\xeb\x81\x02\x12\x17\n" +
+	"\x11PreparedEnterZone\x10\xec\x81\x02\x12\x0e\n" +
+	"\bSyncMove\x10\xed\x81\x02\x12\r\n" +
+	"\aSyncEnd\x10\xff\xff\x02\x12\t\n" +
 	"\x03Max\x10\xff\xff\x03B\vZ\tserver/pbb\x06proto3"
 
 var (

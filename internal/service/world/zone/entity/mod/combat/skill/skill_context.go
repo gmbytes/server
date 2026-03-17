@@ -1,7 +1,6 @@
 package skill
 
 import (
-	"server/internal/pb"
 	izone2 "server/internal/service/world/zone/izone"
 	"server/pkg/uid"
 	"time"
@@ -71,7 +70,7 @@ type SkillContext struct {
 	Zone  izone2.IZone   // 当前区域
 	Owner izone2.IEntity // 技能拥有者
 
-	Req        *pb.ReqCastSkill // 技能请求
+	Req        *CastSkillReq // 技能请求
 	SkillLevel int64            // 技能等级
 	IsFinished bool             // 技能已结束
 
@@ -96,7 +95,7 @@ type SkillContext struct {
 	globalEntity map[GlobalDataKey][]izone2.IEntity
 }
 
-func NewSkillContext(owner izone2.IEntity, req *pb.ReqCastSkill, skillLevel int64) *SkillContext {
+func NewSkillContext(owner izone2.IEntity, req *CastSkillReq, skillLevel int64) *SkillContext {
 	ctx := &SkillContext{
 		id:            uid.Gen(),
 		Owner:         owner,

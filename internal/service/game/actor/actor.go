@@ -48,13 +48,13 @@ func (a *Actor) RpcInit(ctx node.IRpcContext, roleID int64, connId uint64, roleD
 }
 
 // RpcClientRequest 处理来自客户端的业务请求（由 Game 转发）
-func (a *Actor) RpcClientRequest(ctx node.IRpcContext, key uint16, serialNumber uint32, content []byte) {
-	a.Debugf("Actor recv: roleID=%d key=%d sn=%d len=%d", a.roleID, key, serialNumber, len(content))
+func (a *Actor) RpcClientRequest(ctx node.IRpcContext, key uint16, body []byte) {
+	a.Debugf("Actor recv: roleID=%d key=%d len=%d", a.roleID, key, len(body))
 
 	k := pb.EKey_T(key)
 	switch k {
-	case pb.EKey_EnterZone:
-		a.handleEnterZone(serialNumber, content)
+	case pb.EKey_ReqEnterZone:
+		a.handleEnterZone()
 	default:
 		a.Debugf("Actor unhandled key=%d for roleID=%d", key, a.roleID)
 	}
@@ -78,19 +78,15 @@ func (a *Actor) RpcStatus(ctx node.IRpcContext) {
 
 // --------------- Business Handlers ---------------
 
-func (a *Actor) handleEnterZone(serialNumber uint32, _ []byte) {
-	rsp := &pb.Package{
-		KeyCode:      pb.EKey_EnterZone,
-		SerialNumber: serialNumber,
-	}
-	a.sendToClient(rsp)
+func (a *Actor) handleEnterZone() {
+	a.sendToClient(pb.NewPackage(&pb.RspEnterZone{}))
 }
 
 // --------------- Response ---------------
 
 // sendToClient 将响应包通过 Game → Gate 发送给客户端
 func (a *Actor) sendToClient(p *pb.Package) {
-	data, err := p.Bytes()
+	data, err := p.Marshal()
 	if err != nil {
 		a.Errorf("marshal pkg failed: %v", err)
 		return

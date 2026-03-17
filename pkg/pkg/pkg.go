@@ -38,7 +38,7 @@ func (p *GS2GatePkgSingle) Bytes() ([]byte, error) {
 	if p == nil || p.Pkg == nil {
 		return nil, nil
 	}
-	bs, err := p.Pkg.Bytes()
+	bs, err := p.Pkg.Marshal()
 	if err != nil {
 		return nil, err
 	}

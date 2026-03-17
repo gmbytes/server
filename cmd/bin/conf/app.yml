@@ -78,5 +78,5 @@ DB:
   Port: 5432
   Name: "game"
   User: postgres
-  Password: postgres
-  AdminPassword: postgres
+  Password: 123456
+  AdminPassword: 123456

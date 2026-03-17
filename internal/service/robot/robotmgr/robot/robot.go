@@ -13,6 +13,7 @@ import (
 	"server/pkg/net_pkg"
 
 	"github.com/gmbytes/snow/routines/node"
+	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -31,7 +32,7 @@ const (
 	stateStopped                           // 已停止
 )
 
-const pktHeaderLen = 6
+const pktHeaderLen = 8
 
 // Robot 代表一个模拟客户端，通过 TCP 连接到 Gate 进行压力测试。
 type Robot struct {
@@ -186,7 +187,8 @@ func (r *Robot) readLoop() {
 		}
 
 		key := pb.EKey_T(binary.LittleEndian.Uint16(header[0:2]))
-		bodyLen := binary.LittleEndian.Uint32(header[2:6])
+		errCode := pb.EErrorCode_T(binary.LittleEndian.Uint16(header[2:4]))
+		bodyLen := binary.LittleEndian.Uint32(header[4:8])
 
 		var body []byte
 		if bodyLen > 0 {
@@ -202,70 +204,55 @@ func (r *Robot) readLoop() {
 			}
 		}
 
-		var sn uint32
-		if len(body) >= 4 {
-			sn = binary.LittleEndian.Uint32(body[0:4])
-		}
-
 		r.Fork("pkt", func() {
 			r.recvCount++
-			r.onPacket(key, sn)
+			r.onPacket(key, errCode, body)
 		})
 	}
 }
 
 // --------------- Packet Handler ---------------
 
-func (r *Robot) onPacket(key pb.EKey_T, sn uint32) {
-	r.Debugf("Robot[%d] recv key=%d sn=%d state=%d", r.index, key, sn, r.state)
+func (r *Robot) onPacket(key pb.EKey_T, errCode pb.EErrorCode_T, body []byte) {
+	r.Debugf("Robot[%d] recv key=%d err=%d state=%d", r.index, key, errCode, r.state)
 
 	switch key {
-	case pb.EKey_Ping:
+	case pb.EKey_RspPing:
 		return
 
-	case pb.EKey_Login:
+	case pb.EKey_RspLogin:
 		if r.state == stateWaitLogin {
 			r.Infof("Robot[%d] login ok", r.index)
 			r.sendCreateRole()
 		}
 
-	case pb.EKey_CreateRole:
+	case pb.EKey_RspCreateRole:
 		if r.state == stateWaitCreateRole {
 			r.Infof("Robot[%d] create role ok", r.index)
 			r.sendLoginRole()
 		}
 
-	case pb.EKey_LoginRole:
+	case pb.EKey_RspLoginRole:
 		if r.state == stateWaitLoginRole {
 			r.Infof("Robot[%d] login role ok → ready", r.index)
 			r.state = stateReady
 			r.startStressTest()
 		}
 
-	case pb.EKey_EnterZone:
+	case pb.EKey_RspEnterZone:
 		r.Debugf("Robot[%d] enter zone response", r.index)
 	}
+
+	_ = pb.Unmarshal(key, body) // 仅用于确保协议可反序列化（压测无需业务字段）
 }
 
 // --------------- Packet Writer ---------------
 
-func (r *Robot) nextSN() uint32 {
-	r.serialNum++
-	return r.serialNum
-}
-
-func (r *Robot) sendPacket(key pb.EKey_T, content []byte) {
+func (r *Robot) sendProto(msg proto.Message) {
 	if r.conn == nil || r.closed.Load() {
 		return
 	}
-
-	p := &pb.Package{
-		KeyCode:      key,
-		SerialNumber: r.nextSN(),
-		Content:      content,
-	}
-
-	data, err := p.Bytes()
+	data, err := pb.NewPackage(msg).Marshal()
 	if err != nil {
 		r.Errorf("Robot[%d] marshal failed: %v", r.index, err)
 		return
@@ -281,19 +268,19 @@ func (r *Robot) sendPacket(key pb.EKey_T, content []byte) {
 
 func (r *Robot) sendLogin() {
 	r.state = stateWaitLogin
-	r.sendPacket(pb.EKey_Login, nil)
+	r.sendProto(&pb.ReqLogin{Account: r.account})
 	r.Debugf("Robot[%d] → Login", r.index)
 }
 
 func (r *Robot) sendCreateRole() {
 	r.state = stateWaitCreateRole
-	r.sendPacket(pb.EKey_CreateRole, nil)
+	r.sendProto(&pb.ReqCreateRole{})
 	r.Debugf("Robot[%d] → CreateRole", r.index)
 }
 
 func (r *Robot) sendLoginRole() {
 	r.state = stateWaitLoginRole
-	r.sendPacket(pb.EKey_LoginRole, nil)
+	r.sendProto(&pb.ReqLoginRole{})
 	r.Debugf("Robot[%d] → LoginRole", r.index)
 }
 
@@ -302,15 +289,15 @@ func (r *Robot) sendLoginRole() {
 func (r *Robot) startStressTest() {
 	r.pingHandle = r.Tick(5*time.Second, 0, func() {
 		if r.state == stateReady {
-			r.sendPacket(pb.EKey_Ping, nil)
+			r.sendProto(&pb.ReqPing{})
 		}
 	})
 
 	r.stressHandle = r.Tick(2*time.Second, time.Second, func() {
 		if r.state == stateReady {
-			r.sendPacket(pb.EKey_EnterZone, nil)
+			r.sendProto(&pb.ReqEnterZone{})
 		}
 	})
 
-	r.sendPacket(pb.EKey_EnterZone, nil)
+	r.sendProto(&pb.ReqEnterZone{})
 }

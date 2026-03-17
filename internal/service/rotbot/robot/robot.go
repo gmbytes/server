@@ -253,11 +253,11 @@ func (ss *Robot) sendLogin() error {
 		Appid:     ss.opt.Appid,
 		Version:   ss.opt.Version,
 	}
-	return ss.sendReq(pb.EKey_Login, req)
+	return ss.sendReq(pb.EKey_ReqLogin, req)
 }
 
 func (ss *Robot) sendPing() error {
-	return ss.sendReq(pb.EKey_Ping, &pb.ReqPing{})
+	return ss.sendReq(pb.EKey_ReqPing, &pb.ReqPing{})
 }
 
 func (ss *Robot) sendReq(key pb.EKey_T, msg proto.Message) error {
@@ -288,7 +288,7 @@ func (ss *Robot) readLoop() error {
 		key := pb.EKey_T(binary.LittleEndian.Uint16(header[0:2]))
 		errCode := pb.EErrorCode_T(binary.LittleEndian.Uint16(header[2:4]))
 		if errCode != pb.EErrorCode_Ok {
-			if key == pb.EKey_KickRole {
+			if key == pb.EKey_DspKickRole {
 				return errors.New("kicked")
 			}
 			continue

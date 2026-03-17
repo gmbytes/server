@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// pktHeaderLen 客户端包头长度: 2 bytes key + 4 bytes body length
-const pktHeaderLen = 6
+// pktHeaderLen 客户端包头长度: 2 bytes key + 2 bytes err + 4 bytes body length
+const pktHeaderLen = 8
 
 type session struct {
 	gate          *Gate
@@ -49,7 +49,7 @@ func (s *session) serve() {
 			return
 		}
 
-		bodyLen := binary.LittleEndian.Uint32(header[2:6])
+		bodyLen := binary.LittleEndian.Uint32(header[4:8])
 		pkt := make([]byte, pktHeaderLen+bodyLen)
 		copy(pkt[:pktHeaderLen], header)
 		if bodyLen > 0 {

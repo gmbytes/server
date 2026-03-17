@@ -51,7 +51,7 @@ func (m *SkillManager) AddSkill(cfg *conf.CSkill) {
 	m.skills.Set(cfg.Cid, skill.NewSkill(cfg))
 }
 
-func (m *SkillManager) Cast(skillId int64, req *pb.ReqCastSkill) bool {
+func (m *SkillManager) Cast(skillId int64, req *skill.CastSkillReq) bool {
 	rt, ok := m.skills.Get(skillId)
 	if !ok {
 		return false
@@ -176,7 +176,7 @@ func (m *SkillManager) selectNoTarget(z izone.IZone, ctx *skill.SkillContext, cf
 
 		newCtx := *ctx
 		if newCtx.Req == nil {
-			newCtx.Req = &pb.ReqCastSkill{}
+			newCtx.Req = &skill.CastSkillReq{}
 		}
 		newCtx.Req.Pos = &pb.Vector{X: pos.X, Y: pos.Y, Z: pos.Z}
 
@@ -200,7 +200,8 @@ func (m *SkillManager) selectPoint(z izone.IZone, ctx *skill.SkillContext, cfg *
 		return nil
 	}
 
-	center := *ctx.Req.Pos
+	centerX := ctx.Req.Pos.X
+	centerY := ctx.Req.Pos.Y
 	r2 := r * r
 	result := make([]izone.IEntity, 0)
 
@@ -212,8 +213,8 @@ func (m *SkillManager) selectPoint(z izone.IZone, ctx *skill.SkillContext, cfg *
 		if p == nil {
 			return
 		}
-		dx := p.X - center.X
-		dy := p.Y - center.Y
+		dx := float64(p.X - centerX)
+		dy := float64(p.Y - centerY)
 		if dx*dx+dy*dy <= r2 {
 			result = append(result, e)
 		}

@@ -8,7 +8,7 @@ import (
 func (ss *Game) dispatchPkg(sess *actorSession, p *pb.Package) {
 	ss.printPkg(sess, p)
 
-	data, err := p.Bytes()
+	data, err := p.Marshal()
 	if err != nil {
 		ss.Errorf("marshal pkg failed: %v", err)
 		return

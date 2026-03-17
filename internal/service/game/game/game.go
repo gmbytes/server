@@ -130,17 +130,12 @@ func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, _ string
 	}
 
 	key := pb.EKey_T(binary.LittleEndian.Uint16(payload[0:2]))
-	bodyLen := binary.LittleEndian.Uint32(payload[2:6])
-	body := payload[6 : 6+bodyLen]
+	// errCode := pb.EErrorCode_T(binary.LittleEndian.Uint16(payload[2:4])) // 客户端请求一般为 0
+	bodyLen := binary.LittleEndian.Uint32(payload[4:8])
+	body := payload[8 : 8+bodyLen]
 
-	var serialNumber uint32
-	var content []byte
-	if len(body) >= 4 {
-		serialNumber = binary.LittleEndian.Uint32(body[0:4])
-		content = body[4:]
-	}
-
-	sess.onClientPackage(key, serialNumber, content)
+	msg := pb.Unmarshal(key, body)
+	sess.onClientMessage(key, msg, body)
 	ctx.Return([]byte(nil))
 }
 
@@ -151,7 +146,7 @@ func (ss *Game) RpcActorResponse(_ node.IRpcContext, roleId int64, data []byte) 
 
 // --------------- Internal ---------------
 
-const pktHeaderLen = 6
+const pktHeaderLen = 8
 
 func (ss *Game) sendToClient(roleId uid.Uid, data []byte) {
 	sess, ok := ss.actors[roleId]

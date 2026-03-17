@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gmbytes/snow/routines/node"
+	"google.golang.org/protobuf/proto"
 )
 
 type sessionState int32
@@ -77,8 +78,8 @@ func (ss *actorSession) avail() bool {
 	return !ss.bClosing && !ss.bClosed
 }
 
-// onClientPackage 根据当前 session 状态分发客户端消息
-func (ss *actorSession) onClientPackage(key pb.EKey_T, serialNumber uint32, content []byte) {
+// onClientMessage 根据当前 session 状态分发客户端消息
+func (ss *actorSession) onClientMessage(key pb.EKey_T, msg any, body []byte) {
 	if !ss.avail() {
 		return
 	}
@@ -95,36 +96,39 @@ func (ss *actorSession) onClientPackage(key pb.EKey_T, serialNumber uint32, cont
 		return
 	}
 
-	if key == pb.EKey_Ping {
-		ss.handlePing(serialNumber)
+	if key == pb.EKey_ReqPing {
+		ss.handlePing()
 		return
 	}
 
 	switch ss.state {
 	case sessionStateInit:
-		ss.onStateInit(key, serialNumber, content)
+		ss.onStateInit(key, msg)
 	case sessionStateAfterGetRoleList:
-		ss.onStateRoleList(key, serialNumber, content)
+		ss.onStateRoleList(key, msg)
 	case sessionStateBeforeRoleLogin:
 		ss.gs.Debugf("%s msg during role login, ignoring key=%d", ss.descriptor(), key)
 	case sessionStateAfterRoleLogin:
-		ss.onStateForward(key, serialNumber, content)
+		ss.onStateForward(key, body)
 	}
 }
 
 // ---- State: Init → 等待 Login 请求 ----
 
-func (ss *actorSession) onStateInit(key pb.EKey_T, serialNumber uint32, content []byte) {
-	if key != pb.EKey_Login {
+func (ss *actorSession) onStateInit(key pb.EKey_T, msg any) {
+	if key != pb.EKey_ReqLogin {
 		ss.gs.Warnf("%s unexpected key=%d in init state", ss.descriptor(), key)
 		return
 	}
 	ss.addMetric("SignInPlayer")
-	ss.signInPlayer(serialNumber, content)
+	ss.signInPlayer(msg)
 }
 
 // signInPlayer 处理登录请求：验证 → 从 DB 获取角色列表 → 切换到 RoleList 状态
-func (ss *actorSession) signInPlayer(serialNumber uint32, _ []byte) {
+func (ss *actorSession) signInPlayer(msg any) {
+	if req, ok := msg.(*pb.ReqLogin); ok {
+		ss.spArgs = req
+	}
 	account := ""
 	if ss.spArgs != nil {
 		account = ss.spArgs.Account
@@ -147,7 +151,7 @@ func (ss *actorSession) signInPlayer(serialNumber uint32, _ []byte) {
 
 	if !ss.gs.sDB.Avail() {
 		ss.gs.Warnf("%s DB unavailable for signInPlayer", ss.descriptor())
-		ss.sendErrorPkg(serialNumber, pb.EKey_Login, 1)
+		ss.sendErrorPkg(&pb.RspLogin{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
@@ -160,38 +164,38 @@ func (ss *actorSession) signInPlayer(serialNumber uint32, _ []byte) {
 				ss.roles = roles
 				ss.state = sessionStateAfterGetRoleList
 
-				rsp := &pb.Package{
-					KeyCode:      pb.EKey_Login,
-					SerialNumber: serialNumber,
-				}
-				ss.sendPackage(rsp)
+				ss.sendPackage(pb.NewPackage(&pb.RspLogin{
+					Err:        pb.EErrorCode_Ok,
+					Account:    ss.account,
+					ServerTime: time.Now().UnixMilli(),
+				}))
 				ss.gs.Debugf("%s login success, roles=%v", ss.descriptor(), roles)
 			})
 		}).
 		Catch(func(err error) {
 			ss.gs.Errorf("%s RpcGetRoles failed: %v", ss.descriptor(), err)
-			ss.sendErrorPkg(serialNumber, pb.EKey_Login, 1)
+			ss.sendErrorPkg(&pb.RspLogin{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		}).Done()
 }
 
 // ---- State: AfterGetRoleList → 创建/登录角色 ----
 
-func (ss *actorSession) onStateRoleList(key pb.EKey_T, serialNumber uint32, content []byte) {
+func (ss *actorSession) onStateRoleList(key pb.EKey_T, msg any) {
 	switch key {
-	case pb.EKey_CreateRole:
+	case pb.EKey_ReqCreateRole:
 		ss.addMetric("NewRole")
-		ss.actionCreateRole(serialNumber, content)
-	case pb.EKey_LoginRole:
+		ss.actionCreateRole(msg)
+	case pb.EKey_ReqLoginRole:
 		ss.addMetric("SignInRole")
-		ss.actionSignInRole(serialNumber, content)
+		ss.actionSignInRole(msg)
 	default:
 		ss.gs.Warnf("%s unexpected key=%d in role_list state", ss.descriptor(), key)
 	}
 }
 
-func (ss *actorSession) actionCreateRole(serialNumber uint32, _ []byte) {
+func (ss *actorSession) actionCreateRole(_ any) {
 	if !ss.gs.sDB.Avail() {
-		ss.sendErrorPkg(serialNumber, pb.EKey_CreateRole, 1)
+		ss.sendErrorPkg(&pb.RspCreateRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
@@ -202,33 +206,32 @@ func (ss *actorSession) actionCreateRole(serialNumber uint32, _ []byte) {
 					return
 				}
 				ss.roles = append(ss.roles, roleId)
-				rsp := &pb.Package{
-					KeyCode:      pb.EKey_CreateRole,
-					SerialNumber: serialNumber,
-				}
-				ss.sendPackage(rsp)
+				ss.sendPackage(pb.NewPackage(&pb.RspCreateRole{Err: pb.EErrorCode_Ok}))
 				ss.gs.Debugf("%s created role %d", ss.descriptor(), roleId)
 			})
 		}).
 		Catch(func(err error) {
 			ss.gs.Errorf("%s RpcInsertRoleData failed: %v", ss.descriptor(), err)
-			ss.sendErrorPkg(serialNumber, pb.EKey_CreateRole, 1)
+			ss.sendErrorPkg(&pb.RspCreateRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		}).Done()
 }
 
-func (ss *actorSession) actionSignInRole(serialNumber uint32, _ []byte) {
+func (ss *actorSession) actionSignInRole(msg any) {
 	if len(ss.roles) == 0 {
-		ss.sendErrorPkg(serialNumber, pb.EKey_LoginRole, 1)
+		ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_RoleNotFound}, pb.EErrorCode_RoleNotFound)
 		return
 	}
 
 	roleId := uid.Uid(ss.roles[0])
+	if req, ok := msg.(*pb.ReqLoginRole); ok && req.GetRoleId() != 0 {
+		roleId = uid.Uid(req.GetRoleId())
+	}
 	ss.state = sessionStateBeforeRoleLogin
 	ss.gs.Debugf("%s signing in role %d", ss.descriptor(), roleId)
 
 	if !ss.gs.sDB.Avail() {
 		ss.state = sessionStateAfterGetRoleList
-		ss.sendErrorPkg(serialNumber, pb.EKey_LoginRole, 1)
+		ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
@@ -238,25 +241,25 @@ func (ss *actorSession) actionSignInRole(serialNumber uint32, _ []byte) {
 				if !ss.avail() {
 					return
 				}
-				ss.createActor(roleId, roleData, serialNumber)
+				ss.createActor(roleId, roleData)
 			})
 		}).
 		Catch(func(err error) {
 			ss.gs.Fork("signInRole.err", func() {
 				ss.gs.Errorf("%s RpcGetRoleData failed: %v", ss.descriptor(), err)
 				ss.state = sessionStateAfterGetRoleList
-				ss.sendErrorPkg(serialNumber, pb.EKey_LoginRole, 1)
+				ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 			})
 		}).Done()
 }
 
 // createActor 创建 Actor 服务实例并绑定到 session
-func (ss *actorSession) createActor(roleId uid.Uid, roleData *pb.RoleSummaryData, serialNumber uint32) {
+func (ss *actorSession) createActor(roleId uid.Uid, roleData *pb.RoleSummaryData) {
 	sAddr, err := node.NewService("Actor")
 	if err != nil {
 		ss.gs.Errorf("%s create Actor failed: %v", ss.descriptor(), err)
 		ss.state = sessionStateAfterGetRoleList
-		ss.sendErrorPkg(serialNumber, pb.EKey_LoginRole, 1)
+		ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
@@ -277,11 +280,7 @@ func (ss *actorSession) createActor(roleId uid.Uid, roleData *pb.RoleSummaryData
 					return
 				}
 				ss.state = sessionStateAfterRoleLogin
-				rsp := &pb.Package{
-					KeyCode:      pb.EKey_LoginRole,
-					SerialNumber: serialNumber,
-				}
-				ss.sendPackage(rsp)
+				ss.sendPackage(pb.NewPackage(&pb.RspLoginRole{Err: pb.EErrorCode_Ok}))
 				ss.gs.Debugf("%s actor created and ready", ss.descriptor())
 			})
 		}).
@@ -292,18 +291,18 @@ func (ss *actorSession) createActor(roleId uid.Uid, roleData *pb.RoleSummaryData
 				node.StopService(sAddr)
 				ss.proxy = nil
 				ss.sAddr = 0
-				ss.sendErrorPkg(serialNumber, pb.EKey_LoginRole, 1)
+				ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 			})
 		}).Done()
 }
 
 // ---- State: AfterRoleLogin → 转发给 Actor ----
 
-func (ss *actorSession) onStateForward(key pb.EKey_T, serialNumber uint32, content []byte) {
+func (ss *actorSession) onStateForward(key pb.EKey_T, body []byte) {
 	if ss.proxy == nil {
 		return
 	}
-	ss.proxy.Call("ClientRequest", uint16(key), serialNumber, content).
+	ss.proxy.Call("ClientRequest", uint16(key), body).
 		Catch(func(err error) {
 			ss.gs.Errorf("%s forward to actor failed key=%d: %v", ss.descriptor(), key, err)
 		}).Done()
@@ -311,12 +310,8 @@ func (ss *actorSession) onStateForward(key pb.EKey_T, serialNumber uint32, conte
 
 // ---- Helpers ----
 
-func (ss *actorSession) handlePing(serialNumber uint32) {
-	rsp := &pb.Package{
-		KeyCode:      pb.EKey_Ping,
-		SerialNumber: serialNumber,
-	}
-	ss.sendPackage(rsp)
+func (ss *actorSession) handlePing() {
+	ss.sendPackage(pb.NewPackage(&pb.RspPing{}))
 }
 
 func (ss *actorSession) sendPackage(p *pb.Package) {
@@ -326,16 +321,8 @@ func (ss *actorSession) sendPackage(p *pb.Package) {
 	ss.gs.dispatchPkg(ss, p)
 }
 
-func (ss *actorSession) sendErrorPkg(serialNumber uint32, key pb.EKey_T, errCode uint16) {
-	errBytes := make([]byte, 2)
-	errBytes[0] = byte(errCode)
-	errBytes[1] = byte(errCode >> 8)
-	p := &pb.Package{
-		KeyCode:      key,
-		SerialNumber: serialNumber,
-		Content:      errBytes,
-	}
-	ss.sendPackage(p)
+func (ss *actorSession) sendErrorPkg(rsp proto.Message, errCode pb.EErrorCode_T) {
+	ss.sendPackage(pb.NewPackage(rsp, errCode))
 }
 
 func (ss *actorSession) addMetric(name string) {

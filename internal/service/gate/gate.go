@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
-	"strconv"
+
+
 	"sync"
 	"sync/atomic"
-	"time"
+
 
 	"github.com/gmbytes/snow/pkg/host"
 	"github.com/gmbytes/snow/pkg/option"

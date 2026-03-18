@@ -7,8 +7,8 @@ import (
 	"server/internal/data"
 	"server/pkg/utils"
 
-
-	"github.com/gmbytes/snow/routines/node
+	"github.com/gmbytes/snow/pkg/task"
+	"github.com/gmbytes/snow/routines/node"
 	"github.com/lib/pq"
 )
 

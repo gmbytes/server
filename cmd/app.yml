@@ -37,6 +37,14 @@ Node:
         - Game
         - Zone
 
+DB:
+  Reset: false
+  Host: "127.0.0.1"
+  Port: 5432
+  Name: "game_db"
+  User: "postgres"
+  Password: "123456"
+  AdminPassword: "123456"
 
 # Host 主机配置
 Host:

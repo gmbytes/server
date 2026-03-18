@@ -136,6 +136,7 @@ func (p *parser) Load() {
 	p.Register(EKey_DspLogin, func() proto.Message { return &DspLogin{} })
 	p.Register(EKey_DspSrvMaintain, func() proto.Message { return &DspSrvMaintain{} })
 	p.Register(EKey_DspKickRole, func() proto.Message { return &DspKickRole{} })
+	p.Register(EKey_DspEnterZone, func() proto.Message { return &DspEnterZone{} })
 	p.Register(EKey_DspMove, func() proto.Message { return &DspMove{} })
 }
 
@@ -272,6 +273,14 @@ func (msg *DspKickRole) Key() EKey_T {
 }
 
 func (msg *DspKickRole) Marshal() ([]byte, error) {
+	return proto.Marshal(msg)
+}
+
+func (msg *DspEnterZone) Key() EKey_T {
+	return EKey_DspEnterZone
+}
+
+func (msg *DspEnterZone) Marshal() ([]byte, error) {
 	return proto.Marshal(msg)
 }
 

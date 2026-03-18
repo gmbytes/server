@@ -12,12 +12,16 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/gmbytes/snow/pkg/host"
+	"github.com/gmbytes/snow/pkg/option"
 	"github.com/gmbytes/snow/pkg/xnet/transport"
 	"github.com/gmbytes/snow/routines/node"
 )
 
 func init() {
-	node.Register[Gate, *Gate]("Gate")
+	node.Register[Gate, *Gate]("Gate", func(b host.IBuilder) {
+		host.AddOption[*Option](b, "Gate")
+	})
 }
 
 type Option struct {
@@ -51,33 +55,11 @@ type Gate struct {
 	gameProxy node.IProxy
 }
 
-func (s *Gate) Construct(opt *Option) {
-	if opt == nil {
-		opt = &Option{}
-	}
-	if opt.SessionSendQueue <= 0 {
-		opt.SessionSendQueue = 256
-	}
-	if opt.ReadBufferSize <= 0 {
-		opt.ReadBufferSize = 4096
-	}
-	if opt.MaxConnPerIP <= 0 {
-		opt.MaxConnPerIP = 5
-	}
-	if opt.MaxReadPerSec <= 0 {
-		opt.MaxReadPerSec = 100
-	}
-	if opt.MaxHTTPBodyBytes <= 0 {
-		opt.MaxHTTPBodyBytes = 1 << 20
-	}
-	if opt.WsPath == "" {
-		opt.WsPath = "/ws"
-	}
-	s.opt = opt
+func (s *Gate) Construct(opt *option.Option[*Option]) {
+	s.opt = opt.Get()
 }
 
 func (s *Gate) Start(_ any) {
-	s.Infof("gate service starting")
 	s.gameProxy = s.CreateProxy("Game")
 
 	cfg := &transport.Config{
@@ -99,7 +81,6 @@ func (s *Gate) Start(_ any) {
 	}
 	s.startHTTP()
 	s.EnableRpc()
-	s.Infof("gate service started")
 }
 
 func (s *Gate) Stop(_ *sync.WaitGroup) {

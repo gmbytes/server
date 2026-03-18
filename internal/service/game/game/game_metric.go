@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gmbytes/snow/core/task"
+	"github.com/gmbytes/snow/pkg/task"
 )
 
 type metric struct {

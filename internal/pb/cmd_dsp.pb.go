@@ -171,27 +171,27 @@ func (x *DspKickRole) GetSessId() int64 {
 	return 0
 }
 
-// 更新邮件
-type DspPreparedEnterZone struct {
+// 准备进入场景
+type DspEnterZone struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DspPreparedEnterZone) Reset() {
-	*x = DspPreparedEnterZone{}
+func (x *DspEnterZone) Reset() {
+	*x = DspEnterZone{}
 	mi := &file_cmd_dsp_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DspPreparedEnterZone) String() string {
+func (x *DspEnterZone) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DspPreparedEnterZone) ProtoMessage() {}
+func (*DspEnterZone) ProtoMessage() {}
 
-func (x *DspPreparedEnterZone) ProtoReflect() protoreflect.Message {
+func (x *DspEnterZone) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_dsp_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -203,8 +203,8 @@ func (x *DspPreparedEnterZone) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DspPreparedEnterZone.ProtoReflect.Descriptor instead.
-func (*DspPreparedEnterZone) Descriptor() ([]byte, []int) {
+// Deprecated: Use DspEnterZone.ProtoReflect.Descriptor instead.
+func (*DspEnterZone) Descriptor() ([]byte, []int) {
 	return file_cmd_dsp_proto_rawDescGZIP(), []int{3}
 }
 
@@ -275,8 +275,8 @@ const file_cmd_dsp_proto_rawDesc = "" +
 	"\rshutdown_time\x18\x02 \x01(\x12R\fshutdownTime\"G\n" +
 	"\vDspKickRole\x12\x1f\n" +
 	"\x02ty\x18\x01 \x01(\x0e2\x0f.pb.EKickType.TR\x02ty\x12\x17\n" +
-	"\asess_id\x18\x02 \x01(\x12R\x06sessId\"\x16\n" +
-	"\x14DspPreparedEnterZone\"@\n" +
+	"\asess_id\x18\x02 \x01(\x12R\x06sessId\"\x0e\n" +
+	"\fDspEnterZone\"@\n" +
 	"\aDspMove\x12\x17\n" +
 	"\arole_id\x18\x01 \x01(\x03R\x06roleId\x12\x1c\n" +
 	"\x03pos\x18\x02 \x01(\v2\n" +
@@ -296,14 +296,14 @@ func file_cmd_dsp_proto_rawDescGZIP() []byte {
 
 var file_cmd_dsp_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_cmd_dsp_proto_goTypes = []any{
-	(*DspLogin)(nil),             // 0: pb.DspLogin
-	(*DspSrvMaintain)(nil),       // 1: pb.DspSrvMaintain
-	(*DspKickRole)(nil),          // 2: pb.DspKickRole
-	(*DspPreparedEnterZone)(nil), // 3: pb.DspPreparedEnterZone
-	(*DspMove)(nil),              // 4: pb.DspMove
-	(*LoginData)(nil),            // 5: pb.LoginData
-	(EKickType_T)(0),             // 6: pb.EKickType.T
-	(*Vector)(nil),               // 7: pb.Vector
+	(*DspLogin)(nil),       // 0: pb.DspLogin
+	(*DspSrvMaintain)(nil), // 1: pb.DspSrvMaintain
+	(*DspKickRole)(nil),    // 2: pb.DspKickRole
+	(*DspEnterZone)(nil),   // 3: pb.DspEnterZone
+	(*DspMove)(nil),        // 4: pb.DspMove
+	(*LoginData)(nil),      // 5: pb.LoginData
+	(EKickType_T)(0),       // 6: pb.EKickType.T
+	(*Vector)(nil),         // 7: pb.Vector
 }
 var file_cmd_dsp_proto_depIdxs = []int32{
 	5, // 0: pb.DspLogin.data:type_name -> pb.LoginData

@@ -14,7 +14,7 @@ func main() {
 	b := builder.NewDefaultBuilder()
 
 	b.GetConfigurationManager().AddSource(&sources.YamlConfigurationSource{
-		Path:           "conf/robot.yml",
+		Path:           "conf/app.yml",
 		Optional:       true,
 		ReloadOnChange: true,
 	})

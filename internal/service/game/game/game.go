@@ -20,7 +20,6 @@ type Option struct {
 	MaxBackstageSecond       int   `snow:"MaxBackstageSecond"`
 }
 
-// Game 管理所有 Actor（玩家角色）的服务，通过 RPC 与无状态 Gate 通信。
 type Game struct {
 	node.Service
 
@@ -31,8 +30,10 @@ type Game struct {
 	accActors    map[string]*actorSession  // account -> session
 	connIdActors map[uint64]*actorSession  // connId -> session
 
-	sDB   node.IProxy
-	sGate node.IProxy
+	sAccount  node.IProxy
+	sDB       node.IProxy
+	sGate     node.IProxy
+	sSceneMgr node.IProxy
 }
 
 func (ss *Game) Construct(opt *Option) {
@@ -54,8 +55,10 @@ func (ss *Game) Construct(opt *Option) {
 func (ss *Game) Start(_ any) {
 	ss.Infof("Game service starting")
 
+	ss.sAccount = ss.CreateProxy("Account")
 	ss.sDB = ss.CreateProxy("DB")
 	ss.sGate = ss.CreateProxy("Gate")
+	ss.sSceneMgr = ss.CreateProxy("SceneMgr")
 
 	if ss.opt.MetricInterval > 0 {
 		ss.startMetric()
@@ -90,7 +93,6 @@ func (ss *Game) RpcStatus(ctx node.IRpcContext) {
 	})
 }
 
-// RpcOnClientConnect Gate 通知：新客户端连接
 func (ss *Game) RpcOnClientConnect(_ node.IRpcContext, connId uint64, remoteAddr string) {
 	if ss.closed {
 		return
@@ -104,7 +106,6 @@ func (ss *Game) RpcOnClientConnect(_ node.IRpcContext, connId uint64, remoteAddr
 	ss.Debugf("new client connected: connId=%d addr=%s", connId, remoteAddr)
 }
 
-// RpcOnClientDisconnect Gate 通知：客户端断开
 func (ss *Game) RpcOnClientDisconnect(_ node.IRpcContext, connId uint64) {
 	sess, ok := ss.connIdActors[connId]
 	if !ok {
@@ -114,8 +115,63 @@ func (ss *Game) RpcOnClientDisconnect(_ node.IRpcContext, connId uint64) {
 	ss.closeActorSession(sess, "client_disconnect")
 }
 
-// RpcHandleClientMsg Gate 转发的客户端消息（一个完整的协议包）
-func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, _ string, payload []byte) {
+func (ss *Game) RpcOnGateAuthedClient(ctx node.IRpcContext, connId uint64, account string, roleId int64) {
+	if ss.closed {
+		ctx.Error(nil)
+		return
+	}
+
+	if existing, ok := ss.accActors[account]; ok && existing.connId != connId {
+		if existing.proxy != nil && existing.roleId > 0 {
+			ss.Debugf("rebinding actor account=%s roleId=%d to newConn=%d", account, existing.roleId, connId)
+			delete(ss.connIdActors, existing.connId)
+			existing.connId = connId
+			existing.updateDescriptor()
+			ss.connIdActors[connId] = existing
+			ss.bindRole(int64(existing.roleId), connId)
+
+			existing.proxy.Call("Rebind", connId).
+				Catch(func(err error) {
+					ss.Errorf("rebind actor failed: %v", err)
+				}).Done()
+
+			ctx.Return(int64(existing.roleId))
+			return
+		}
+		ss.removeActor(existing, "duplicate_login")
+	}
+
+	sess := newActorSession(ss, connId, "")
+	sess.account = account
+	sess.updateDescriptor()
+	ss.connIdActors[connId] = sess
+	ss.accActors[account] = sess
+
+	if roleId > 0 {
+		sess.actionSignInRoleById(uid.Uid(roleId))
+	} else {
+		sess.autoLogin()
+	}
+
+	ctx.Return(roleId)
+}
+
+func (ss *Game) RpcForwardToActor(ctx node.IRpcContext, connId uint64, msgKey int, msgData []byte) {
+	sess, ok := ss.connIdActors[connId]
+	if !ok {
+		return
+	}
+	if sess.proxy == nil {
+		return
+	}
+	sess.proxy.Call("ClientRequest", uint16(msgKey), msgData).
+		Catch(func(err error) {
+			ss.Errorf("forward to actor failed: %v", err)
+		}).Done()
+	ctx.Return()
+}
+
+func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, remoteIP string, payload []byte) {
 	if len(payload) < pktHeaderLen {
 		ctx.Return([]byte(nil))
 		return
@@ -123,14 +179,16 @@ func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, _ string
 
 	sess, ok := ss.connIdActors[connId]
 	if !ok {
-		ss.Debugf("msg for unknown connId=%d, telling gate to close", connId)
-		ss.kickByConnId(connId)
-		ctx.Return([]byte(nil))
-		return
+		if ss.closed {
+			ctx.Return([]byte(nil))
+			return
+		}
+		sess = newActorSession(ss, connId, remoteIP)
+		ss.connIdActors[connId] = sess
+		ss.Debugf("auto-created session for connId=%d addr=%s", connId, remoteIP)
 	}
 
 	key := pb.EKey_T(binary.LittleEndian.Uint16(payload[0:2]))
-	// errCode := pb.EErrorCode_T(binary.LittleEndian.Uint16(payload[2:4])) // 客户端请求一般为 0
 	bodyLen := binary.LittleEndian.Uint32(payload[4:8])
 	body := payload[8 : 8+bodyLen]
 
@@ -139,9 +197,19 @@ func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, _ string
 	ctx.Return([]byte(nil))
 }
 
-// RpcActorResponse Actor 通过 Game 向客户端发送数据
 func (ss *Game) RpcActorResponse(_ node.IRpcContext, roleId int64, data []byte) {
 	ss.sendToClient(uid.Uid(roleId), data)
+}
+
+func (ss *Game) RpcOnRemoteSceneMessage(_ node.IRpcContext, roleId int64, entityId int64, key int, data []byte) {
+	sess, ok := ss.actors[uid.Uid(roleId)]
+	if !ok || sess.proxy == nil {
+		return
+	}
+	sess.proxy.Call("ClientRequest", uint16(key), data).
+		Catch(func(err error) {
+			ss.Errorf("remote scene msg forward failed: %v", err)
+		}).Done()
 }
 
 // --------------- Internal ---------------

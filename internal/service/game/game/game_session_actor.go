@@ -33,7 +33,7 @@ type actorSession struct {
 
 	state   sessionState
 	spArgs  *pb.ReqLogin
-	roles   []int64
+	roles   []*pb.RoleSummaryData
 	loginTs int64
 
 	pkgUpdateTs int64
@@ -97,7 +97,11 @@ func (ss *actorSession) onClientMessage(key pb.EKey_T, msg any, body []byte) {
 	}
 
 	if key == pb.EKey_ReqPing {
-		ss.handlePing()
+		if ss.state == sessionStateAfterRoleLogin {
+			ss.onStateForward(key, body)
+		} else {
+			ss.handlePing()
+		}
 		return
 	}
 
@@ -124,7 +128,7 @@ func (ss *actorSession) onStateInit(key pb.EKey_T, msg any) {
 	ss.signInPlayer(msg)
 }
 
-// signInPlayer 处理登录请求：验证 → 从 DB 获取角色列表 → 切换到 RoleList 状态
+// signInPlayer 处理登录请求：验证 → 通过 Account 获取角色列表 → 切换到 RoleList 状态
 func (ss *actorSession) signInPlayer(msg any) {
 	if req, ok := msg.(*pb.ReqLogin); ok {
 		ss.spArgs = req
@@ -149,14 +153,14 @@ func (ss *actorSession) signInPlayer(msg any) {
 
 	ss.gs.Debugf("%s signInPlayer", ss.descriptor())
 
-	if !ss.gs.sDB.Avail() {
-		ss.gs.Warnf("%s DB unavailable for signInPlayer", ss.descriptor())
+	if !ss.gs.sAccount.Avail() {
+		ss.gs.Warnf("%s Account unavailable for signInPlayer", ss.descriptor())
 		ss.sendErrorPkg(&pb.RspLogin{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
-	ss.gs.sDB.Call("GetRoles", account).
-		Then(func(roles []int64) {
+	ss.gs.sAccount.Call("GetRoles", account).
+		Then(func(roles []*pb.RoleSummaryData) {
 			ss.gs.Fork("signInPlayer.gotRoles", func() {
 				if !ss.avail() {
 					return
@@ -166,14 +170,15 @@ func (ss *actorSession) signInPlayer(msg any) {
 
 				ss.sendPackage(pb.NewPackage(&pb.RspLogin{
 					Err:        pb.EErrorCode_Ok,
+					Roles:      roles,
 					Account:    ss.account,
 					ServerTime: time.Now().UnixMilli(),
 				}))
-				ss.gs.Debugf("%s login success, roles=%v", ss.descriptor(), roles)
+				ss.gs.Debugf("%s login success, roleCount=%d", ss.descriptor(), len(roles))
 			})
 		}).
 		Catch(func(err error) {
-			ss.gs.Errorf("%s RpcGetRoles failed: %v", ss.descriptor(), err)
+			ss.gs.Errorf("%s Account.GetRoles failed: %v", ss.descriptor(), err)
 			ss.sendErrorPkg(&pb.RspLogin{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		}).Done()
 }
@@ -193,25 +198,33 @@ func (ss *actorSession) onStateRoleList(key pb.EKey_T, msg any) {
 	}
 }
 
-func (ss *actorSession) actionCreateRole(_ any) {
-	if !ss.gs.sDB.Avail() {
+func (ss *actorSession) actionCreateRole(msg any) {
+	if !ss.gs.sAccount.Avail() {
+		ss.sendErrorPkg(&pb.RspCreateRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
+		return
+	}
+	req, ok := msg.(*pb.ReqCreateRole)
+	if !ok {
 		ss.sendErrorPkg(&pb.RspCreateRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
-	ss.gs.sDB.Call("InsertRoleData", ss.account).
-		Then(func(roleId int64) {
+	ss.gs.sAccount.Call("CreateRole", ss.account, req.GetCid(), req.GetName()).
+		Then(func(role *pb.RoleSummaryData) {
 			ss.gs.Fork("createRole.done", func() {
-				if !ss.avail() {
+				if !ss.avail() || role == nil {
 					return
 				}
-				ss.roles = append(ss.roles, roleId)
-				ss.sendPackage(pb.NewPackage(&pb.RspCreateRole{Err: pb.EErrorCode_Ok}))
-				ss.gs.Debugf("%s created role %d", ss.descriptor(), roleId)
+				ss.roles = append(ss.roles, role)
+				ss.sendPackage(pb.NewPackage(&pb.RspCreateRole{
+					Err:  pb.EErrorCode_Ok,
+					Role: role,
+				}))
+				ss.gs.Debugf("%s created role %d", ss.descriptor(), role.GetId())
 			})
 		}).
 		Catch(func(err error) {
-			ss.gs.Errorf("%s RpcInsertRoleData failed: %v", ss.descriptor(), err)
+			ss.gs.Errorf("%s Account.CreateRole failed: %v", ss.descriptor(), err)
 			ss.sendErrorPkg(&pb.RspCreateRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		}).Done()
 }
@@ -222,20 +235,24 @@ func (ss *actorSession) actionSignInRole(msg any) {
 		return
 	}
 
-	roleId := uid.Uid(ss.roles[0])
+	roleId := uid.Uid(ss.roles[0].GetId())
 	if req, ok := msg.(*pb.ReqLoginRole); ok && req.GetRoleId() != 0 {
 		roleId = uid.Uid(req.GetRoleId())
+	}
+	if ss.findRole(roleId) == nil {
+		ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_RoleNotFound}, pb.EErrorCode_RoleNotFound)
+		return
 	}
 	ss.state = sessionStateBeforeRoleLogin
 	ss.gs.Debugf("%s signing in role %d", ss.descriptor(), roleId)
 
-	if !ss.gs.sDB.Avail() {
+	if !ss.gs.sAccount.Avail() {
 		ss.state = sessionStateAfterGetRoleList
 		ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 		return
 	}
 
-	ss.gs.sDB.Call("GetRoleData", int64(roleId)).
+	ss.gs.sAccount.Call("GetRole", ss.account, int64(roleId)).
 		Then(func(roleData *pb.RoleSummaryData) {
 			ss.gs.Fork("signInRole.gotData", func() {
 				if !ss.avail() {
@@ -246,7 +263,7 @@ func (ss *actorSession) actionSignInRole(msg any) {
 		}).
 		Catch(func(err error) {
 			ss.gs.Fork("signInRole.err", func() {
-				ss.gs.Errorf("%s RpcGetRoleData failed: %v", ss.descriptor(), err)
+				ss.gs.Errorf("%s Account.GetRole failed: %v", ss.descriptor(), err)
 				ss.state = sessionStateAfterGetRoleList
 				ss.sendErrorPkg(&pb.RspLoginRole{Err: pb.EErrorCode_Failed}, pb.EErrorCode_Failed)
 			})
@@ -339,4 +356,60 @@ func (ss *actorSession) resetMetricTime() {
 		return
 	}
 	ss.metricMs = time.Now().UnixMilli()
+}
+
+func (ss *actorSession) findRole(roleId uid.Uid) *pb.RoleSummaryData {
+	for _, role := range ss.roles {
+		if role != nil && role.GetId() == int64(roleId) {
+			return role
+		}
+	}
+	return nil
+}
+
+func (ss *actorSession) actionSignInRoleById(roleId uid.Uid) {
+	ss.state = sessionStateBeforeRoleLogin
+	ss.gs.Debugf("%s signing in role %d (from GateAuthed)", ss.descriptor(), roleId)
+
+	if !ss.gs.sAccount.Avail() {
+		ss.state = sessionStateAfterGetRoleList
+		return
+	}
+
+	ss.gs.sAccount.Call("GetRole", ss.account, int64(roleId)).
+		Then(func(roleData *pb.RoleSummaryData) {
+			ss.gs.Fork("gateAuth.signInRole.gotData", func() {
+				if !ss.avail() {
+					return
+				}
+				ss.createActor(roleId, roleData)
+			})
+		}).
+		Catch(func(err error) {
+			ss.gs.Fork("gateAuth.signInRole.err", func() {
+				ss.gs.Errorf("%s Account.GetRole failed (gateAuth): %v", ss.descriptor(), err)
+				ss.state = sessionStateInit
+			})
+		}).Done()
+}
+
+func (ss *actorSession) autoLogin() {
+	if !ss.gs.sAccount.Avail() {
+		return
+	}
+
+	ss.gs.sAccount.Call("GetRoles", ss.account).
+		Then(func(roles []*pb.RoleSummaryData) {
+			ss.gs.Fork("autoLogin.gotRoles", func() {
+				if !ss.avail() {
+					return
+				}
+				ss.roles = roles
+				ss.state = sessionStateAfterGetRoleList
+				ss.gs.Debugf("%s autoLogin got %d roles", ss.descriptor(), len(roles))
+			})
+		}).
+		Catch(func(err error) {
+			ss.gs.Errorf("%s autoLogin GetRoles failed: %v", ss.descriptor(), err)
+		}).Done()
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/gmbytes/snow/pkg/xhttp"
 	"github.com/gmbytes/snow/pkg/xnet/transport"
 	"github.com/gmbytes/snow/routines/node"
+	"server/internal/service/platform/access"
 )
 
 func init() {
@@ -39,6 +40,7 @@ type Option struct {
 	MaxConnPerIP     int32  `snow:"MaxConnPerIP"`
 	MaxReadPerSec    int32  `snow:"MaxReadPerSec"`
 	MaxHTTPBodyBytes int64  `snow:"MaxHTTPBodyBytes"`
+	GateId           string `snow:"GateId"`
 }
 
 type Gate struct {
@@ -54,7 +56,8 @@ type Gate struct {
 	ipConnCount      sync.Map // ip -> *atomic.Int32
 	nextConnSeq      atomic.Uint64
 
-	gameProxy node.IProxy
+	accessProxy node.IProxy
+	gameProxy   node.IProxy
 }
 
 func (s *Gate) Construct(opt *option.Option[*Option]) {
@@ -62,6 +65,7 @@ func (s *Gate) Construct(opt *option.Option[*Option]) {
 }
 
 func (s *Gate) Start(_ any) {
+	s.accessProxy = s.CreateProxy("Access")
 	s.gameProxy = s.CreateProxy("Game")
 
 	cfg := &transport.Config{
@@ -82,6 +86,24 @@ func (s *Gate) Start(_ any) {
 		go s.acceptLoop(ln)
 	}
 	s.startHTTP()
+
+	if s.accessProxy.Avail() {
+		gateId := s.opt.GateId
+		if gateId == "" {
+			gateId = fmt.Sprintf("gate_%d", time.Now().UnixNano())
+		}
+		s.accessProxy.Call("RegisterGate", &access.GateMeta{
+			GateId: gateId,
+			Host:   s.opt.TcpListenHost,
+			Port:   s.opt.TcpListenPort,
+			WsHost: s.opt.WsListenHost,
+			WsPort: s.opt.WsListenPort,
+			WsPath: s.opt.WsPath,
+		}).Catch(func(err error) {
+			s.Warnf("register gate failed: %v", err)
+		}).Done()
+	}
+
 	s.EnableRpc()
 }
 
@@ -211,9 +233,6 @@ func (s *Gate) handleHealth(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write([]byte("ok"))
 }
 
-// handleForward 处理 HTTP 无状态转发：客户端通过 HTTP POST 发送单个请求包，
-// Gate 为其分配临时 connId 转发给 Game，Game 处理后通过 RPC 将结果写回。
-// 支持通过 X-Conn-Id 复用已有连接 ID（用于需保持上下文的场景）。
 func (s *Gate) handleForward(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -270,6 +289,7 @@ func (s *Gate) newSession(conn net.Conn, remoteIP string) *session {
 		conn:     conn,
 		remoteIP: remoteIP,
 		sendQ:    make(chan []byte, s.opt.SessionSendQueue),
+		phase:    phaseHandshake,
 	}
 	s.sessionsByConnId.Store(connID, sess)
 	return sess
@@ -281,6 +301,9 @@ func (s *Gate) nextConnID() uint64 {
 }
 
 func (s *Gate) tryAddConnByIP(ip string) bool {
+	if s.opt.MaxConnPerIP <= 0 {
+		return true
+	}
 	v, _ := s.ipConnCount.LoadOrStore(ip, &atomic.Int32{})
 	counter := v.(*atomic.Int32)
 	if counter.Add(1) <= s.opt.MaxConnPerIP {
@@ -304,10 +327,7 @@ func (s *Gate) onSessionOpened(sess *session) {
 	if !s.gameProxy.Avail() {
 		return
 	}
-	s.gameProxy.Call("OnClientConnect", sess.id, sess.remoteIP).
-		Catch(func(err error) {
-			s.Errorf("notify client connect failed connId=%d err=%v", sess.id, err)
-		}).Done()
+	s.gameProxy.Call("OnClientConnect", sess.id, sess.remoteIP).Done()
 }
 
 func (s *Gate) onSessionClosed(sess *session) {
@@ -317,13 +337,15 @@ func (s *Gate) onSessionClosed(sess *session) {
 	s.sessionsByConnId.Delete(sess.id)
 	s.decConnByIP(sess.remoteIP)
 
-	if !s.gameProxy.Avail() {
-		return
+	if sess.phase == phaseGame {
+		if !s.gameProxy.Avail() {
+			return
+		}
+		s.gameProxy.Call("OnClientDisconnect", sess.id).
+			Catch(func(err error) {
+				s.Errorf("notify client disconnect failed connId=%d err=%v", sess.id, err)
+			}).Done()
 	}
-	s.gameProxy.Call("OnClientDisconnect", sess.id).
-		Catch(func(err error) {
-			s.Errorf("notify client disconnect failed connId=%d err=%v", sess.id, err)
-		}).Done()
 }
 
 func (s *Gate) forwardToGame(connID uint64, remoteIP string, payload []byte) {

@@ -1,0 +1,82 @@
+# 游戏服务器配置文件
+
+# Gate 网关配置
+Gate:
+  TcpListenHost: "0.0.0.0"   # TCP 监听地址
+  TcpListenPort: 61101        # TCP 监听端口，0 表示关闭
+  WsListenHost: "0.0.0.0"     # WebSocket 监听地址
+  WsListenPort: 8080          # WebSocket 监听端口，0 表示关闭
+  WsPath: "/ws"               # WebSocket 升级路径
+
+# Access 控制面 HTTP 配置
+Access:
+  HttpHost: "0.0.0.0"
+  HttpPort: 9000
+
+# Node 节点配置
+Node:
+  LocalIP: "127.0.0.1"
+  ProfileListenHost: ""
+  ProfileListenMinPort: 0
+  ProfileListenMaxPort: 0
+  HttpKeepAliveSeconds: 60
+  HttpTimeoutSeconds: 30
+  HttpDebug: false
+  BootName: "Game"
+  Nodes:
+    Game:
+      Order: 1
+      Host: ""
+      Port: 0
+      HttpPort: 0
+      UseHttps: false
+      Services:
+        - Access
+        - Auth
+        - Account
+        - DB
+        - Gate
+        - Game
+        - SceneMgr
+        # Scene 不在此配置 — 由 SceneMgr 按需动态创建
+        - Social
+        # Cross 远期
+
+DB:
+  Reset: false
+  Host: "127.0.0.1"
+  Port: 5432
+  Name: "game_db"
+  User: "postgres"
+  Password: "123456"
+  AdminPassword: "123456"
+
+# Host 主机配置
+Host:
+  StartWaitTimeoutSeconds: 5
+  StopWaitTimeoutSeconds: 8
+
+# Log 日志配置
+Log:
+  Compound:
+    NodeId: 0
+    NodeName: ""
+  Console:
+    Formatter: "Color"
+    FileLineLevel: 4
+    FileLineSkip: 6
+    ErrorLevel: 4
+    Filter: {}
+    DefaultLevel: 1
+  File:
+    LogPath: "logs"
+    MaxLogChanLength: 10000
+    Formatter: "Default"
+    FileLineLevel: 4
+    FileLineSkip: 6
+    Filter: {}
+    DefaultLevel: 1
+    FileNameFormat: "%Y_%M_%D_%h_%m_%i"
+    FileRollingMegabytes: 100
+    FileRollingIntervalSeconds: 3600
+    Compress: true

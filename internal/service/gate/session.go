@@ -9,8 +9,15 @@ import (
 	"time"
 )
 
-// pktHeaderLen 客户端包头长度: 2 bytes key + 2 bytes err + 4 bytes body length
 const pktHeaderLen = 8
+
+type sessionPhase int32
+
+const (
+	phaseHandshake sessionPhase = iota
+	phaseGame
+	phaseClosed
+)
 
 type session struct {
 	gate          *Gate
@@ -23,10 +30,11 @@ type session struct {
 	closed        atomic.Bool
 	readQPS       int32
 	readQPSSecond int64
+
+	phase   sessionPhase
+	account string
 }
 
-// serve 是长连接（TCP/WebSocket）的主循环：
-// 通知 Game 新连接 → 读取客户端包 → 转发给 Game → 连接关闭时通知 Game。
 func (s *session) serve() {
 	defer s.gate.wg.Done()
 	defer s.close()
@@ -61,7 +69,15 @@ func (s *session) serve() {
 			}
 		}
 
-		s.gate.forwardToGame(s.id, s.remoteIP, pkt)
+		switch s.phase {
+		case phaseHandshake:
+			s.gate.forwardToGame(s.id, s.remoteIP, pkt)
+			s.phase = phaseGame
+		case phaseGame:
+			s.gate.forwardToGame(s.id, s.remoteIP, pkt)
+		case phaseClosed:
+			return
+		}
 	}
 }
 
@@ -98,6 +114,7 @@ func (s *session) close() {
 	if s.closed.Swap(true) {
 		return
 	}
+	s.phase = phaseClosed
 	s.sendMu.Lock()
 	close(s.sendQ)
 	s.sendMu.Unlock()

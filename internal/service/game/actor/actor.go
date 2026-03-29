@@ -20,12 +20,13 @@ type Actor struct {
 
 	roleID   int64
 	connId   uint64
+	account  string
 	roleData *pb.RoleSummaryData
 
-	sGame    node.IProxy
+	sGame     node.IProxy
 	sSceneMgr node.IProxy
-	sSocial  node.IProxy
-	sDB      node.IProxy
+	sSocial   node.IProxy
+	sDB       node.IProxy
 
 	sceneProxy node.IProxy
 	curSceneId int64
@@ -49,11 +50,12 @@ func (a *Actor) AfterStop() {
 
 // --------------- RPC: Game → Actor ---------------
 
-func (a *Actor) RpcInit(ctx node.IRpcContext, roleID int64, connId uint64, roleData *pb.RoleSummaryData) {
+func (a *Actor) RpcInit(ctx node.IRpcContext, roleID int64, connId uint64, account string, roleData *pb.RoleSummaryData) {
 	a.roleID = roleID
 	a.connId = connId
+	a.account = account
 	a.roleData = roleData
-	a.Infof("Actor init: roleID=%d connId=%d", roleID, connId)
+	a.Infof("Actor init: roleID=%d connId=%d account=%s", roleID, connId, account)
 	ctx.Return()
 }
 
@@ -82,23 +84,35 @@ func (a *Actor) RpcClientRequest(ctx node.IRpcContext, key uint16, body []byte) 
 
 func (a *Actor) RpcKick(ctx node.IRpcContext) {
 	a.Infof("Actor kicked: roleID=%d", a.roleID)
+
+	onAfterLeave := func() {
+		a.saveData(func() {
+			ctx.Return()
+		})
+	}
 	if a.sceneProxy != nil && a.curSceneId > 0 {
 		if a.sceneProxy.Avail() {
 			a.sceneProxy.Call("LeaveScene", a.curSceneId, a.roleID, int(scene.LeaveReasonKick)).
-				Catch(func(err error) {
-					a.Warnf("LeaveScene on kick failed: roleID=%d err=%v", a.roleID, err)
-				}).
-				Final(func() {
+				Then(func(ret *scene.LeaveResult) {
 					a.sceneProxy = nil
 					a.curSceneId = 0
+					onAfterLeave()
+				}).
+				Catch(func(err error) {
+					a.Errorf("leave scene on kick failed roleID=%d: %v", a.roleID, err)
+					a.sceneProxy = nil
+					a.curSceneId = 0
+					onAfterLeave()
 				}).Done()
 		} else {
 			a.Warnf("sceneProxy unavailable on kick, skip LeaveScene: roleID=%d", a.roleID)
 			a.sceneProxy = nil
 			a.curSceneId = 0
+			onAfterLeave()
 		}
+	} else {
+		onAfterLeave()
 	}
-	ctx.Return()
 }
 
 func (a *Actor) RpcRebind(ctx node.IRpcContext, newConnId uint64) {
@@ -210,6 +224,37 @@ func (a *Actor) buildSnapshotWithCarry(carry *scene.EntityCarryData) []byte {
 	}
 	data, _ := json.Marshal(snap)
 	return data
+}
+
+// --------------- Persistence ---------------
+
+func (a *Actor) saveData(onDone func()) {
+	if a.roleData == nil || a.account == "" {
+		a.Warnf("saveData skipped: no roleData or account for roleID=%d", a.roleID)
+		onDone()
+		return
+	}
+	if !a.sDB.Avail() {
+		a.Warnf("DB unavailable on saveData, skip persist for roleID=%d", a.roleID)
+		onDone()
+		return
+	}
+
+	data, err := json.Marshal(a.roleData)
+	if err != nil {
+		a.Errorf("saveData marshal failed roleID=%d: %v", a.roleID, err)
+		onDone()
+		return
+	}
+
+	a.sDB.Call("UpdateRoleData", int64(0), a.account, a.roleID, string(data), `{"reason":"kick"}`).
+		Catch(func(err error) {
+			a.Errorf("saveData failed roleID=%d: %v", a.roleID, err)
+		}).
+		Final(func() {
+			a.Infof("saveData done roleID=%d", a.roleID)
+			onDone()
+		}).Done()
 }
 
 // --------------- Response ---------------

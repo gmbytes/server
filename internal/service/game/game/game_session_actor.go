@@ -290,7 +290,7 @@ func (ss *actorSession) createActor(roleId uid.Uid, roleData *pb.RoleSummaryData
 
 	node.StartService(sAddr, nil)
 
-	ss.proxy.Call("Init", int64(roleId), ss.connId, roleData).
+	ss.proxy.Call("Init", int64(roleId), ss.connId, ss.account, roleData).
 		Then(func() {
 			ss.gs.Fork("actor.inited", func() {
 				if !ss.avail() {

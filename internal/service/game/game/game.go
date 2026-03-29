@@ -1,10 +1,12 @@
 package game
 
 import (
+	"context"
 	"encoding/binary"
 	"server/internal/pb"
 	"server/pkg/uid"
 	"sync"
+	"time"
 
 	"github.com/gmbytes/snow/routines/node"
 )
@@ -72,11 +74,18 @@ func (ss *Game) Stop(wg *sync.WaitGroup) {
 	ss.Infof("Game service stopping")
 	ss.closed = true
 
+	kickWg := &sync.WaitGroup{}
 	for _, sess := range ss.actors {
-		ss.removeActor(sess, "server_shutdown")
+		kickWg.Add(1)
+		ss.closeActorSessionWithWg(sess, "server_shutdown", kickWg)
+		ss.kickByConnId(sess.connId)
 	}
 
-	_ = wg
+	wg.Add(1)
+	go func() {
+		kickWg.Wait()
+		wg.Done()
+	}()
 }
 
 func (ss *Game) AfterStop() {
@@ -255,7 +264,14 @@ func (ss *Game) bindRole(roleId int64, connId uint64) {
 }
 
 func (ss *Game) closeActorSession(sess *actorSession, reason string) {
+	ss.closeActorSessionWithWg(sess, reason, nil)
+}
+
+func (ss *Game) closeActorSessionWithWg(sess *actorSession, reason string, wg *sync.WaitGroup) {
 	if sess.bClosed {
+		if wg != nil {
+			wg.Done()
+		}
 		return
 	}
 	sess.bClosing = true
@@ -271,13 +287,25 @@ func (ss *Game) closeActorSession(sess *actorSession, reason string) {
 	}
 
 	if sess.proxy != nil && sess.sAddr != 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		sAddr := sess.sAddr
+
 		sess.proxy.Call("Kick").
+			WithContext(ctx).
 			Catch(func(err error) {
 				ss.Debugf("kick actor failed roleId=%d: %v", sess.roleId, err)
 			}).
 			Final(func() {
-				node.StopService(sess.sAddr)
+				cancel()
+				node.StopService(sAddr)
+				if wg != nil {
+					wg.Done()
+				}
 			}).Done()
+	} else {
+		if wg != nil {
+			wg.Done()
+		}
 	}
 
 	sess.bClosed = true

@@ -290,8 +290,7 @@ func (r *Robot) sendPing() {
 // --------------- Send ---------------
 
 func (r *Robot) sendMsg(msg proto.Message) {
-	p := pb.NewPackage(msg)
-	data, err := p.Marshal()
+	data, err := pb.MarshalRequest(msg)
 	if err != nil {
 		r.logf("marshal error: %v", err)
 		r.stats.ErrorCount.Add(1)

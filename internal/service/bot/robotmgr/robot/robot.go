@@ -252,7 +252,7 @@ func (r *Robot) sendProto(msg proto.Message) {
 	if r.conn == nil || r.closed.Load() {
 		return
 	}
-	data, err := pb.NewPackage(msg).Marshal()
+	data, err := pb.MarshalRequest(msg)
 	if err != nil {
 		r.Errorf("Robot[%d] marshal failed: %v", r.index, err)
 		return

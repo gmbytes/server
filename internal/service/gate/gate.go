@@ -13,12 +13,13 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"server/internal/service/platform/access"
+
 	"github.com/gmbytes/snow/pkg/host"
 	"github.com/gmbytes/snow/pkg/option"
 	"github.com/gmbytes/snow/pkg/xhttp"
 	"github.com/gmbytes/snow/pkg/xnet/transport"
 	"github.com/gmbytes/snow/routines/node"
-	"server/internal/service/platform/access"
 )
 
 func init() {
@@ -291,6 +292,7 @@ func (s *Gate) newSession(conn net.Conn, remoteIP string) *session {
 		sendQ:    make(chan []byte, s.opt.SessionSendQueue),
 		phase:    phaseHandshake,
 	}
+
 	s.sessionsByConnId.Store(connID, sess)
 	return sess
 }

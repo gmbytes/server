@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const pktHeaderLen = 8
+const pktHeaderLen = 6
 
 type sessionPhase int32
 
@@ -57,7 +57,7 @@ func (s *session) serve() {
 			return
 		}
 
-		bodyLen := binary.LittleEndian.Uint32(header[4:8])
+		bodyLen := binary.LittleEndian.Uint32(header[2:6])
 		pkt := make([]byte, pktHeaderLen+bodyLen)
 		copy(pkt[:pktHeaderLen], header)
 		if bodyLen > 0 {

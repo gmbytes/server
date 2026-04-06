@@ -198,8 +198,8 @@ func (ss *Game) RpcHandleClientMsg(ctx node.IRpcContext, connId uint64, remoteIP
 	}
 
 	key := pb.EKey_T(binary.LittleEndian.Uint16(payload[0:2]))
-	bodyLen := binary.LittleEndian.Uint32(payload[4:8])
-	body := payload[8 : 8+bodyLen]
+	bodyLen := binary.LittleEndian.Uint32(payload[2:6])
+	body := payload[6 : 6+bodyLen]
 
 	msg := pb.Unmarshal(key, body)
 	sess.onClientMessage(key, msg, body)
@@ -223,7 +223,7 @@ func (ss *Game) RpcOnRemoteSceneMessage(_ node.IRpcContext, roleId int64, entity
 
 // --------------- Internal ---------------
 
-const pktHeaderLen = 8
+const pktHeaderLen = 6
 
 func (ss *Game) sendToClient(roleId uid.Uid, data []byte) {
 	sess, ok := ss.actors[roleId]

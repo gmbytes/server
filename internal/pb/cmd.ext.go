@@ -75,6 +75,26 @@ func (p *Package) Marshal() ([]byte, error) {
 	return bytes, nil
 }
 
+// MarshalRequest encodes a client request into the 6-byte-header wire format:
+// [key 2B LE] [bodyLen 4B LE] [protobuf body]
+func MarshalRequest(msg proto.Message) ([]byte, error) {
+	m, ok := msg.(message)
+	if !ok {
+		return nil, errors.New("msg does not implement Key()")
+	}
+
+	body, err := proto.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, 6+len(body))
+	binary.LittleEndian.PutUint16(buf[0:2], uint16(m.Key()))
+	binary.LittleEndian.PutUint32(buf[2:6], uint32(len(body)))
+	copy(buf[6:], body)
+	return buf, nil
+}
+
 func Unmarshal(key EKey_T, data []byte) proto.Message {
 	return _parser.Unmarshal(key, data)
 }

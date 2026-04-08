@@ -23,7 +23,7 @@ server/server/
 │   │   ├── world/zone/  # Zone、战斗等玩法模块（与 Scene 演进并存）
 │   │   ├── robot/       # 机器人管理
 │   │   └── bot/         # 压测机器人实例
-│   └── data/            # 配置加载、枚举、存档结构等
+│   └── data/            # 配置加载、枚举、存档结构等；**`xls/go.gen.go`** 由 **`comm/gen_server.bat`** 生成
 └── pkg/                 # 与业务弱相关的通用包（容器、网络包封装等）
 ```
 
@@ -32,7 +32,7 @@ server/server/
 在仓库 **`comm/`** 执行：
 
 - **`build.bat`**：编译 **`genpb.exe`**、**`genxls.exe`**
-- **`gen_server.bat`**：刷新 **`internal/pb/*.go`**，并导出 **`../../server/data/xls/go.gen.go`** 与 **`../../server/conf/all.json`**
+- **`gen_server.bat`**：刷新 **`internal/pb/*.go`**，并导出 **`internal/data/xls/go.gen.go`** 与 **`cmd/conf/all.json`**
 
 协议真源：**`comm/tools/genpb/proto/`**。线协议与帧格式见 **`comm/doc/消息设计.md`**。
 
@@ -47,4 +47,4 @@ server/server/
 |------|------|
 | snow 框架 | `server/snow/` |
 | 运行时配置示例 | 各环境 `app.yml`（以实际部署为准） |
-| 服务端配置 JSON | `server/conf/all.json`（genxls 导出） |
+| 服务端配置 JSON | `cmd/conf/all.json`（genxls 导出，相对本 `server/server` 目录） |

@@ -6,7 +6,7 @@ import (
 
 	"server/pkg/uid"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 )
 
 func init() {

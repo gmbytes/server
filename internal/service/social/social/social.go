@@ -3,7 +3,7 @@ package social
 import (
 	"sync"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 )
 
 func init() {

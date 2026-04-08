@@ -12,7 +12,7 @@ import (
 	"server/internal/pb"
 	"server/pkg/net_pkg"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -23,13 +23,13 @@ func init() {
 type robotState int32
 
 const (
-	stateInit            robotState = iota
-	stateConnecting                        // TCP 连接中
-	stateWaitLogin                         // 等待 Login 响应
-	stateWaitCreateRole                    // 等待 CreateRole 响应
-	stateWaitLoginRole                     // 等待 LoginRole 响应
-	stateReady                             // 完成登录，可压测
-	stateStopped                           // 已停止
+	stateInit           robotState = iota
+	stateConnecting                // TCP 连接中
+	stateWaitLogin                 // 等待 Login 响应
+	stateWaitCreateRole            // 等待 CreateRole 响应
+	stateWaitLoginRole             // 等待 LoginRole 响应
+	stateReady                     // 完成登录，可压测
+	stateStopped                   // 已停止
 )
 
 const pktHeaderLen = 8

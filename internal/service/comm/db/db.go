@@ -10,7 +10,7 @@ import (
 
 	"github.com/gmbytes/snow/pkg/host"
 	"github.com/gmbytes/snow/pkg/option"
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 	"github.com/lib/pq"
 )
 

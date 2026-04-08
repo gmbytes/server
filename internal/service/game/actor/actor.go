@@ -8,7 +8,7 @@ import (
 	"server/internal/service/realm/scene"
 	"server/internal/service/realm/scenemgr"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 )
 
 func init() {

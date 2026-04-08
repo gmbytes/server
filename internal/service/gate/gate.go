@@ -17,9 +17,9 @@ import (
 
 	"github.com/gmbytes/snow/pkg/host"
 	"github.com/gmbytes/snow/pkg/option"
+	"github.com/gmbytes/snow/pkg/routines/node"
 	"github.com/gmbytes/snow/pkg/xhttp"
 	"github.com/gmbytes/snow/pkg/xnet/transport"
-	"github.com/gmbytes/snow/routines/node"
 )
 
 func init() {

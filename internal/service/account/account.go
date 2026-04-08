@@ -10,7 +10,7 @@ import (
 	"server/internal/pb"
 	"server/pkg/uid"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

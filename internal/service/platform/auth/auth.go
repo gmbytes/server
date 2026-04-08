@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 )
 
 func init() {

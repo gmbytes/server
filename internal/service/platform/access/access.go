@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gmbytes/snow/routines/node"
+	"github.com/gmbytes/snow/pkg/routines/node"
 )
 
 func init() {
@@ -36,21 +36,21 @@ type GateMetrics struct {
 }
 
 type gateEntry struct {
-	Meta      GateMeta
-	Metrics   GateMetrics
-	LastBeat  int64
+	Meta     GateMeta
+	Metrics  GateMetrics
+	LastBeat int64
 }
 
 type Access struct {
 	node.Service
 
-	opt       *Option
-	sAuth     node.IProxy
-	sAccount  node.IProxy
-	sDB       node.IProxy
-	httpSrv   *http.Server
-	gates     map[string]*gateEntry
-	gatesMu   sync.RWMutex
+	opt      *Option
+	sAuth    node.IProxy
+	sAccount node.IProxy
+	sDB      node.IProxy
+	httpSrv  *http.Server
+	gates    map[string]*gateEntry
+	gatesMu  sync.RWMutex
 }
 
 func (ss *Access) Construct(opt *Option) {

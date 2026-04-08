@@ -301,52 +301,6 @@ func (EForbiddenType_T) EnumDescriptor() ([]byte, []int) {
 	return file_enum_proto_rawDescGZIP(), []int{3, 0}
 }
 
-type EObjType_T int32
-
-const (
-	EObjType_None EObjType_T = 0 // 无
-	EObjType_Item EObjType_T = 1 // 道具
-)
-
-// Enum value maps for EObjType_T.
-var (
-	EObjType_T_name = map[int32]string{
-		0: "None",
-		1: "Item",
-	}
-	EObjType_T_value = map[string]int32{
-		"None": 0,
-		"Item": 1,
-	}
-)
-
-func (x EObjType_T) Enum() *EObjType_T {
-	p := new(EObjType_T)
-	*p = x
-	return p
-}
-
-func (x EObjType_T) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (EObjType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[4].Descriptor()
-}
-
-func (EObjType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[4]
-}
-
-func (x EObjType_T) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use EObjType_T.Descriptor instead.
-func (EObjType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{4, 0}
-}
-
 type ESignInFastType_T int32
 
 const (
@@ -380,11 +334,11 @@ func (x ESignInFastType_T) String() string {
 }
 
 func (ESignInFastType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[5].Descriptor()
+	return file_enum_proto_enumTypes[4].Descriptor()
 }
 
 func (ESignInFastType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[5]
+	return &file_enum_proto_enumTypes[4]
 }
 
 func (x ESignInFastType_T) Number() protoreflect.EnumNumber {
@@ -393,7 +347,7 @@ func (x ESignInFastType_T) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ESignInFastType_T.Descriptor instead.
 func (ESignInFastType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{5, 0}
+	return file_enum_proto_rawDescGZIP(), []int{4, 0}
 }
 
 type ECondType_T int32
@@ -426,11 +380,11 @@ func (x ECondType_T) String() string {
 }
 
 func (ECondType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[6].Descriptor()
+	return file_enum_proto_enumTypes[5].Descriptor()
 }
 
 func (ECondType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[6]
+	return &file_enum_proto_enumTypes[5]
 }
 
 func (x ECondType_T) Number() protoreflect.EnumNumber {
@@ -439,7 +393,7 @@ func (x ECondType_T) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ECondType_T.Descriptor instead.
 func (ECondType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{6, 0}
+	return file_enum_proto_rawDescGZIP(), []int{5, 0}
 }
 
 type EAttrType_T int32
@@ -469,11 +423,11 @@ func (x EAttrType_T) String() string {
 }
 
 func (EAttrType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[7].Descriptor()
+	return file_enum_proto_enumTypes[6].Descriptor()
 }
 
 func (EAttrType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[7]
+	return &file_enum_proto_enumTypes[6]
 }
 
 func (x EAttrType_T) Number() protoreflect.EnumNumber {
@@ -482,7 +436,7 @@ func (x EAttrType_T) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EAttrType_T.Descriptor instead.
 func (EAttrType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{7, 0}
+	return file_enum_proto_rawDescGZIP(), []int{6, 0}
 }
 
 type EEntityType_T int32
@@ -527,11 +481,11 @@ func (x EEntityType_T) String() string {
 }
 
 func (EEntityType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[8].Descriptor()
+	return file_enum_proto_enumTypes[7].Descriptor()
 }
 
 func (EEntityType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[8]
+	return &file_enum_proto_enumTypes[7]
 }
 
 func (x EEntityType_T) Number() protoreflect.EnumNumber {
@@ -540,7 +494,7 @@ func (x EEntityType_T) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EEntityType_T.Descriptor instead.
 func (EEntityType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{8, 0}
+	return file_enum_proto_rawDescGZIP(), []int{7, 0}
 }
 
 type ESceneType_T int32
@@ -579,11 +533,11 @@ func (x ESceneType_T) String() string {
 }
 
 func (ESceneType_T) Descriptor() protoreflect.EnumDescriptor {
-	return file_enum_proto_enumTypes[9].Descriptor()
+	return file_enum_proto_enumTypes[8].Descriptor()
 }
 
 func (ESceneType_T) Type() protoreflect.EnumType {
-	return &file_enum_proto_enumTypes[9]
+	return &file_enum_proto_enumTypes[8]
 }
 
 func (x ESceneType_T) Number() protoreflect.EnumNumber {
@@ -592,7 +546,7 @@ func (x ESceneType_T) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ESceneType_T.Descriptor instead.
 func (ESceneType_T) EnumDescriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{9, 0}
+	return file_enum_proto_rawDescGZIP(), []int{8, 0}
 }
 
 // 统一返回状态
@@ -741,42 +695,6 @@ func (*EForbiddenType) Descriptor() ([]byte, []int) {
 	return file_enum_proto_rawDescGZIP(), []int{3}
 }
 
-type EObjType struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EObjType) Reset() {
-	*x = EObjType{}
-	mi := &file_enum_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EObjType) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EObjType) ProtoMessage() {}
-
-func (x *EObjType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EObjType.ProtoReflect.Descriptor instead.
-func (*EObjType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{4}
-}
-
 // 重登类型
 type ESignInFastType struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -786,7 +704,7 @@ type ESignInFastType struct {
 
 func (x *ESignInFastType) Reset() {
 	*x = ESignInFastType{}
-	mi := &file_enum_proto_msgTypes[5]
+	mi := &file_enum_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -798,7 +716,7 @@ func (x *ESignInFastType) String() string {
 func (*ESignInFastType) ProtoMessage() {}
 
 func (x *ESignInFastType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[5]
+	mi := &file_enum_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -811,7 +729,7 @@ func (x *ESignInFastType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ESignInFastType.ProtoReflect.Descriptor instead.
 func (*ESignInFastType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{5}
+	return file_enum_proto_rawDescGZIP(), []int{4}
 }
 
 type ECondType struct {
@@ -822,7 +740,7 @@ type ECondType struct {
 
 func (x *ECondType) Reset() {
 	*x = ECondType{}
-	mi := &file_enum_proto_msgTypes[6]
+	mi := &file_enum_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +752,7 @@ func (x *ECondType) String() string {
 func (*ECondType) ProtoMessage() {}
 
 func (x *ECondType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[6]
+	mi := &file_enum_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +765,7 @@ func (x *ECondType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ECondType.ProtoReflect.Descriptor instead.
 func (*ECondType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{6}
+	return file_enum_proto_rawDescGZIP(), []int{5}
 }
 
 type EAttrType struct {
@@ -858,7 +776,7 @@ type EAttrType struct {
 
 func (x *EAttrType) Reset() {
 	*x = EAttrType{}
-	mi := &file_enum_proto_msgTypes[7]
+	mi := &file_enum_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -870,7 +788,7 @@ func (x *EAttrType) String() string {
 func (*EAttrType) ProtoMessage() {}
 
 func (x *EAttrType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[7]
+	mi := &file_enum_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -883,7 +801,7 @@ func (x *EAttrType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EAttrType.ProtoReflect.Descriptor instead.
 func (*EAttrType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{7}
+	return file_enum_proto_rawDescGZIP(), []int{6}
 }
 
 type EEntityType struct {
@@ -894,7 +812,7 @@ type EEntityType struct {
 
 func (x *EEntityType) Reset() {
 	*x = EEntityType{}
-	mi := &file_enum_proto_msgTypes[8]
+	mi := &file_enum_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -906,7 +824,7 @@ func (x *EEntityType) String() string {
 func (*EEntityType) ProtoMessage() {}
 
 func (x *EEntityType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[8]
+	mi := &file_enum_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -919,7 +837,7 @@ func (x *EEntityType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EEntityType.ProtoReflect.Descriptor instead.
 func (*EEntityType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{8}
+	return file_enum_proto_rawDescGZIP(), []int{7}
 }
 
 type ESceneType struct {
@@ -930,7 +848,7 @@ type ESceneType struct {
 
 func (x *ESceneType) Reset() {
 	*x = ESceneType{}
-	mi := &file_enum_proto_msgTypes[9]
+	mi := &file_enum_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -942,7 +860,7 @@ func (x *ESceneType) String() string {
 func (*ESceneType) ProtoMessage() {}
 
 func (x *ESceneType) ProtoReflect() protoreflect.Message {
-	mi := &file_enum_proto_msgTypes[9]
+	mi := &file_enum_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -955,7 +873,7 @@ func (x *ESceneType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ESceneType.ProtoReflect.Descriptor instead.
 func (*ESceneType) Descriptor() ([]byte, []int) {
-	return file_enum_proto_rawDescGZIP(), []int{9}
+	return file_enum_proto_rawDescGZIP(), []int{8}
 }
 
 var File_enum_proto protoreflect.FileDescriptor
@@ -1020,11 +938,7 @@ const file_enum_proto_rawDesc = "" +
 	"\aAccount\x10\x02\x12\b\n" +
 	"\x04Undo\x10\x03\x12\a\n" +
 	"\x03Mac\x10\x04\x12\x06\n" +
-	"\x02IP\x10\x05\"#\n" +
-	"\bEObjType\"\x17\n" +
-	"\x01T\x12\b\n" +
-	"\x04None\x10\x00\x12\b\n" +
-	"\x04Item\x10\x01\"9\n" +
+	"\x02IP\x10\x05\"9\n" +
 	"\x0fESignInFastType\"&\n" +
 	"\x01T\x12\v\n" +
 	"\aInvalid\x10\x00\x12\n" +
@@ -1067,29 +981,27 @@ func file_enum_proto_rawDescGZIP() []byte {
 	return file_enum_proto_rawDescData
 }
 
-var file_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_enum_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_enum_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_enum_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_enum_proto_goTypes = []any{
 	(EErrorCode_T)(0),       // 0: pb.EErrorCode.T
 	(EKickType_T)(0),        // 1: pb.EKickType.T
 	(ERoleType_T)(0),        // 2: pb.ERoleType.T
 	(EForbiddenType_T)(0),   // 3: pb.EForbiddenType.T
-	(EObjType_T)(0),         // 4: pb.EObjType.T
-	(ESignInFastType_T)(0),  // 5: pb.ESignInFastType.T
-	(ECondType_T)(0),        // 6: pb.ECondType.T
-	(EAttrType_T)(0),        // 7: pb.EAttrType.T
-	(EEntityType_T)(0),      // 8: pb.EEntityType.T
-	(ESceneType_T)(0),       // 9: pb.ESceneType.T
-	(*EErrorCode)(nil),      // 10: pb.EErrorCode
-	(*EKickType)(nil),       // 11: pb.EKickType
-	(*ERoleType)(nil),       // 12: pb.ERoleType
-	(*EForbiddenType)(nil),  // 13: pb.EForbiddenType
-	(*EObjType)(nil),        // 14: pb.EObjType
-	(*ESignInFastType)(nil), // 15: pb.ESignInFastType
-	(*ECondType)(nil),       // 16: pb.ECondType
-	(*EAttrType)(nil),       // 17: pb.EAttrType
-	(*EEntityType)(nil),     // 18: pb.EEntityType
-	(*ESceneType)(nil),      // 19: pb.ESceneType
+	(ESignInFastType_T)(0),  // 4: pb.ESignInFastType.T
+	(ECondType_T)(0),        // 5: pb.ECondType.T
+	(EAttrType_T)(0),        // 6: pb.EAttrType.T
+	(EEntityType_T)(0),      // 7: pb.EEntityType.T
+	(ESceneType_T)(0),       // 8: pb.ESceneType.T
+	(*EErrorCode)(nil),      // 9: pb.EErrorCode
+	(*EKickType)(nil),       // 10: pb.EKickType
+	(*ERoleType)(nil),       // 11: pb.ERoleType
+	(*EForbiddenType)(nil),  // 12: pb.EForbiddenType
+	(*ESignInFastType)(nil), // 13: pb.ESignInFastType
+	(*ECondType)(nil),       // 14: pb.ECondType
+	(*EAttrType)(nil),       // 15: pb.EAttrType
+	(*EEntityType)(nil),     // 16: pb.EEntityType
+	(*ESceneType)(nil),      // 17: pb.ESceneType
 }
 var file_enum_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -1109,8 +1021,8 @@ func file_enum_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_enum_proto_rawDesc), len(file_enum_proto_rawDesc)),
-			NumEnums:      10,
-			NumMessages:   10,
+			NumEnums:      9,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

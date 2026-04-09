@@ -1,3 +1,4 @@
+// Package account 提供账号与角色档案 RPC（由 Access HTTP 聚合调用）。
 package account
 
 import (
@@ -157,6 +158,47 @@ func (ss *Account) RpcCreateRole(ctx node.IRpcContext, account string, cid int64
 				return
 			}
 			ctx.Return(role)
+		}).
+		Catch(func(err error) {
+			ctx.Error(err)
+		}).
+		Done()
+}
+
+// RpcDeleteRole 软删角色：先校验该角色属于 account，再调用 DB DelRoleData。
+func (ss *Account) RpcDeleteRole(ctx node.IRpcContext, account string, roleID int64) {
+	account = strings.TrimSpace(account)
+	if account == "" {
+		ctx.Error(fmt.Errorf("account is empty"))
+		return
+	}
+	if roleID == 0 {
+		ctx.Error(fmt.Errorf("role id is empty"))
+		return
+	}
+	if ss.sDB == nil || !ss.sDB.Avail() {
+		ctx.Error(fmt.Errorf("db proxy unavailable"))
+		return
+	}
+
+	ss.sDB.Call("GetRoleData", account, roleID).
+		Then(func(ok bool, _ string) {
+			if !ok {
+				ctx.Error(fmt.Errorf("role %d not found", roleID))
+				return
+			}
+			ss.sDB.Call("DelRoleData", roleID).
+				Then(func(delOk bool) {
+					if !delOk {
+						ctx.Error(fmt.Errorf("delete role failed"))
+						return
+					}
+					ctx.Return(true)
+				}).
+				Catch(func(err error) {
+					ctx.Error(err)
+				}).
+				Done()
 		}).
 		Catch(func(err error) {
 			ctx.Error(err)

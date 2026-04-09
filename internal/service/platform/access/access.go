@@ -75,6 +75,7 @@ func (ss *Access) Start(_ any) {
 	mux.HandleFunc("/auth/login", ss.handleLogin)
 	mux.HandleFunc("/auth/reconnect", ss.handleReconnect)
 	mux.HandleFunc("/account/create-role", ss.handleCreateRole)
+	mux.HandleFunc("/account/delete-role", ss.handleDeleteRole)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -209,15 +210,21 @@ func (ss *Access) handleLogin(w http.ResponseWriter, r *http.Request) {
 				Then(func(roles any) {
 					ss.sAuth.Call("GenGateTicket", req.Account, req.RealmId, int64(0)).
 						Then(func(ticket string) {
-							ss.Fork("login.done", func() {
-								gates := ss.getGateList()
-								writeJSON(w, map[string]any{
-									"token":  token,
-									"ticket": ticket,
-									"roles":  roles,
-									"gates":  gates,
-								})
-							})
+							ss.sAuth.Call("GenReconnectTicket", req.Account, req.RealmId, int64(0)).
+								Then(func(reconnect string) {
+									ss.Fork("login.done", func() {
+										gates := ss.getGateList()
+										writeJSON(w, map[string]any{
+											"token":            token,
+											"ticket":           ticket,
+											"reconnect_ticket": reconnect,
+											"roles":            roles,
+											"gates":            gates,
+										})
+									})
+								}).Catch(func(err error) {
+								httpError(w, err)
+							}).Done()
 						}).Catch(func(err error) {
 						httpError(w, err)
 					}).Done()
@@ -247,20 +254,34 @@ func (ss *Access) handleReconnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ss.sAuth.Call("VerifyAccessToken", req.ReconnectTicket).
-		Then(func(ok bool, account string, _ string) {
+	if req.RealmId == 0 {
+		req.RealmId = 1
+	}
+
+	ss.sAuth.Call("VerifyReconnectTicket", req.ReconnectTicket).
+		Then(func(ok bool, account string, realmId int64, roleId int64) {
 			if !ok {
 				http.Error(w, "invalid ticket", http.StatusUnauthorized)
 				return
 			}
-			ss.sAuth.Call("GenGateTicket", account, req.RealmId, int64(0)).
+			useRealm := req.RealmId
+			if realmId != 0 {
+				useRealm = realmId
+			}
+			ss.sAuth.Call("GenGateTicket", account, useRealm, roleId).
 				Then(func(ticket string) {
-					ss.Fork("reconnect.done", func() {
-						writeJSON(w, map[string]any{
-							"ticket": ticket,
-							"gates":  ss.getGateList(),
-						})
-					})
+					ss.sAuth.Call("GenReconnectTicket", account, useRealm, roleId).
+						Then(func(newReconnect string) {
+							ss.Fork("reconnect.done", func() {
+								writeJSON(w, map[string]any{
+									"ticket":               ticket,
+									"new_reconnect_ticket": newReconnect,
+									"gates":                ss.getGateList(),
+								})
+							})
+						}).Catch(func(err error) {
+						httpError(w, err)
+					}).Done()
 				}).Catch(func(err error) {
 				httpError(w, err)
 			}).Done()
@@ -292,6 +313,35 @@ func (ss *Access) handleCreateRole(w http.ResponseWriter, r *http.Request) {
 		Then(func(role any) {
 			ss.Fork("createRole.done", func() {
 				writeJSON(w, map[string]any{"role": role})
+			})
+		}).
+		Catch(func(err error) {
+			httpError(w, err)
+		}).Done()
+}
+
+func (ss *Access) handleDeleteRole(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var req struct {
+		Account string `json:"account"`
+		RoleID  int64  `json:"role_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if !ss.sAccount.Avail() {
+		http.Error(w, "service unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
+	ss.sAccount.Call("DeleteRole", req.Account, req.RoleID).
+		Then(func(_ bool) {
+			ss.Fork("deleteRole.done", func() {
+				writeJSON(w, map[string]any{"ok": true})
 			})
 		}).
 		Catch(func(err error) {

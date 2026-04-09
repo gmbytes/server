@@ -16,7 +16,7 @@ help:
 	@echo "  make vet              Run go vet"
 	@echo "  make fmt              Run go fmt"
 	@echo "  make tidy             Run go mod tidy"
-	@echo "  make build            Build binary to bin/server"
+	@echo "  make build            Build cmd/server binary to bin/server"
 	@echo "  make ci               Run lint, tests and race detector"
 	@echo "  make init-hooks       Install git pre-commit hook"
 	@echo "  make init-workspace   Generate go.work at slgame/ root (IDE cross-module support)"
@@ -71,7 +71,7 @@ tidy:
 .PHONY: build
 build:
 	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/server .
+	$(GO) build -buildvcs=false -o $(BIN_DIR)/server ./cmd/server
 
 .PHONY: ci
 ci: lint test test-race
